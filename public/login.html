@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-19 19:30:01
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-01-19 20:01:20
+ * @LastEditTime: 2025-01-19 20:17:29
  * @FilePath: /FireStudyRoom/public/login.html
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -69,10 +69,12 @@
         body: JSON.stringify({ secretKey })
       });
       
+      console.log("Response Headers:", response.headers); // Log response headers
+
       const data = await response.json();
       if (data.message === 'Login successful') {
         // Redirect after successful login
-        window.location.href = '/studyroom.html';
+        window.location.href = '/studyroom';
       } else {
         alert(data.error || 'Login failed');
       }

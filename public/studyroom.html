@@ -72,33 +72,52 @@
         return;
       }
 
-      const ws = new WebSocket(`ws://${window.location.host}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const ws = new WebSocket(`ws://${window.location.host}`, `Bearer-${token}`);
 
       ws.onerror = (error) => {
         console.error('WebSocket error:', error);
-        if (error.message.includes('401')) {
-          window.location.href = '/login.html';
-        }
+        // 假设错误消息包含 '401' 表示认证失败
+        // if (error.message.includes('401')) {
+        //   window.location.href = '/login.html';
+        // }
       };
 
-      ws.onclose = () => {
-        console.log('WebSocket connection closed');
+      ws.onclose = (event) => {
+        console.log('WebSocket connection closed with code:', event.code);
+        if (event.code === 1008) {
+          // 服务器端关闭代码 1008 表示策略违规，可能是认证失败
+          window.location.href = '/login.html';
+        }
       };
 
       return ws;
     }
 
     // 检查认证状态
-    if (!checkAuth()) {
-      throw new Error('Unauthorized');
-    }
+    // if (!checkAuth()) {
+    //   throw new Error('Unauthorized');
+    // }
 
     const ws = initWebSocket();
     let todos = [];
+
+    // WebSocket消息处理
+    ws.onmessage = (event) => {
+      const { type, data } = JSON.parse(event.data);
+      
+      switch (type) {
+        case 'INIT':
+          todos = data;
+          renderTodos();
+          break;
+        case 'ADD_TODO':
+        case 'UPDATE_TODO':
+        case 'DELETE_TODO':
+          todos = data;
+          renderTodos();
+          break;
+      }
+    };
 
     // WebSocket消息处理
     ws.onmessage = (event) => {

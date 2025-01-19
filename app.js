@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-19 19:07:22
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-01-19 20:03:25
+ * @LastEditTime: 2025-01-19 20:19:54
  * @FilePath: /FireStudyRoom/app.js
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -56,9 +56,10 @@ app.post('/login', (req, res) => {
     logger.info(`Successful login from IP: ${req.ip}`);
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // 开发环境下强制关闭secure
       maxAge
-    }).json({ message: 'Login successful' });
+    });
+    res.json({ message: 'Login successful' });
   } else {
     // 记录失败登录
     logger.warn(`Failed login attempt from IP: ${req.ip}`);
@@ -126,18 +127,42 @@ if (!fs.existsSync(dataDir)) {
 }
 
 // WebSocket连接处理
-wss.on('connection', (ws) => {
-  logger.info('New WebSocket connection');
-  
-  // 发送当前todolist数据
-  const todoFilePath = path.join(dataDir, 'todolist.json');
-  if (fs.existsSync(todoFilePath)) {
-    const data = fs.readFileSync(todoFilePath, 'utf8');
-    ws.send(JSON.stringify({
-      type: 'INIT',
-      data: JSON.parse(data)
-    }));
+wss.on('connection', (ws, req) => {
+  // 从cookie中获取token
+  const cookies = req.headers.cookie;
+  if (!cookies) {
+    ws.close(1008, 'Unauthorized');
+    return;
   }
+
+  const token = cookies.split('; ')
+    .find(c => c.startsWith('token='))
+    ?.split('=')[1];
+
+  if (!token) {
+    ws.close(1008, 'Unauthorized');
+    return;
+  }
+
+  // 验证token
+  jwt.verify(token, config.security.authKey, (err, decoded) => {
+    if (err || !decoded?.authenticated) {
+      ws.close(1008, 'Invalid token');
+      return;
+    }
+
+    logger.info('New WebSocket connection from authenticated user');
+    
+    // 发送当前todolist数据
+    const todoFilePath = path.join(dataDir, 'todolist.json');
+    if (fs.existsSync(todoFilePath)) {
+      const data = fs.readFileSync(todoFilePath, 'utf8');
+      ws.send(JSON.stringify({
+        type: 'INIT',
+        data: JSON.parse(data)
+      }));
+    }
+  });
 
   ws.on('message', (message) => {
     try {

@@ -1,0 +1,10 @@
+{
+  "app": {
+    "port": 3100,
+    "env": "development"
+  },
+  "security": {
+    "authKey": "test",
+    "tokenExpiration": "1h"
+  }
+}

@@ -1,0 +1,82 @@
+<!--
+ * @Author: Lieyan
+ * @Date: 2025-01-19 19:30:01
+ * @LastEditors: Lieyan
+ * @LastEditTime: 2025-01-19 19:32:39
+ * @FilePath: /FireStudyRoom/public/login.html
+ * @Description: 
+ * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
+ * @Copyright: Copyright (c) 2025 by lieyanDevTeam, All Rights Reserved. 
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      width: 300px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <input type="password" id="secretKey" placeholder="Enter Secret Key">
+    <button onclick="login()">Login</button>
+  </div>
+
+  <script>
+    async function login() {
+      const secretKey = document.getElementById('secretKey').value;
+      
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ secretKey })
+      });
+      
+      const data = await response.json();
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        alert('Login successful!');
+      } else {
+        alert('Login failed');
+      }
+    }
+  </script>
+</body>
+</html>

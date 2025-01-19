@@ -1,0 +1,29 @@
+{
+  "name": "firestudyroom",
+  "version": "1.0.0",
+  "description": "双人线上自习室",
+  "main": "app.js",
+  "scripts": {
+    "test": "-t"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lieyan666/FireStudyRoom.git"
+  },
+  "keywords": [
+    "studyroom",
+    "todolist"
+  ],
+  "author": "lieyan",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/lieyan666/FireStudyRoom/issues"
+  },
+  "homepage": "https://github.com/lieyan666/FireStudyRoom#readme",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "winston": "^3.17.0"
+  }
+}

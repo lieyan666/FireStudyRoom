@@ -22,8 +22,11 @@
   "homepage": "https://github.com/lieyan666/FireStudyRoom#readme",
   "dependencies": {
     "body-parser": "^1.20.3",
+    "cookie-parser": "^1.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "winston": "^3.17.0"
+    "uuid": "^11.0.5",
+    "winston": "^3.17.0",
+    "ws": "^8.18.0"
   }
 }

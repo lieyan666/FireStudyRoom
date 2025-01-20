@@ -1,42 +1,144 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>自习室待办事项</title>
+  <title>StudyRoom</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
     body {
-      font-family: Arial, sans-serif;
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
-    .todo-container {
-      margin-top: 20px;
+
+    body.disconnected::before {
+      content: "连接已断开";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #ff4444;
+      color: white;
+      text-align: center;
+      padding: 8px;
+      z-index: 1000;
     }
-    .todo-item {
-      padding: 10px;
-      margin: 5px 0;
-      border: 1px solid #ddd;
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
       border-radius: 4px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      color: white;
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out;
     }
-    .completed {
-      text-decoration: line-through;
-      opacity: 0.7;
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
     }
+
+    .notification.info {
+      background: #2196f3;
+    }
+
+    .notification.error {
+      background: #f44336;
+    }
+
+    .notification.warning {
+      background: #ff9800;
+    }
+
     .todo-form {
       margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
     }
-    .todo-form input {
+
+    #new-todo {
+      flex: 1;
       padding: 8px;
-      margin-right: 10px;
-      width: 300px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #2196f3;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #1976d2;
+    }
+
+    .btn-delete {
+      background: #f44336;
+    }
+
+    .btn-delete:hover {
+      background: #d32f2f;
+    }
+
+    .todo-item {
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .todo-item.completed {
+      background: #f5f5f5;
+    }
+
+    .todo-item.completed span {
+      text-decoration: line-through;
+      color: #666;
+    }
+
+    .todo-meta {
+      font-size: 12px;
+      color: #666;
+      margin: 5px 0;
+    }
+
+    .todo-date {
+      margin-right: 15px;
+    }
+
+    .todo-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-style: italic;
     }
   </style>
 </head>
+
 <body>
   <h1>自习室待办事项</h1>
   <div class="todo-form">
@@ -46,108 +148,123 @@
   <div class="todo-container" id="todo-list"></div>
 
   <script>
-    // 获取JWT token
-    function getToken() {
-      const cookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('token='));
-      return cookie ? cookie.split('=')[1] : null;
+    let ws = null;
+    let todos = [];
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 5;
+    const RECONNECT_DELAY = 3000;
+
+    // 显示通知
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 3000);
     }
 
-    // 检查token有效性
-    function checkAuth() {
-      const token = getToken();
-      if (!token) {
-        window.location.href = '/login.html';
-        return false;
-      }
-      return true;
+    // 转义HTML特殊字符
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
     // 初始化WebSocket连接
     function initWebSocket() {
-      const token = getToken();
-      if (!token) {
-        window.location.href = '/login.html';
-        return;
+      if (ws) {
+        ws.close();
       }
 
-      const ws = new WebSocket(`ws://${window.location.host}`, `Bearer-${token}`);
+      ws = new WebSocket(`ws://${window.location.host}/ws`);
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        showNotification('已连接到服务器');
+        reconnectAttempts = 0;
+        document.body.classList.remove('disconnected');
+      };
 
       ws.onerror = (error) => {
         console.error('WebSocket error:', error);
-        // 假设错误消息包含 '401' 表示认证失败
-        // if (error.message.includes('401')) {
-        //   window.location.href = '/login.html';
-        // }
+        showNotification('连接错误', 'error');
+        document.body.classList.add('disconnected');
       };
 
       ws.onclose = (event) => {
         console.log('WebSocket connection closed with code:', event.code);
-        if (event.code === 1008) {
-          // 服务器端关闭代码 1008 表示策略违规，可能是认证失败
-          window.location.href = '/login.html';
+        document.body.classList.add('disconnected');
+
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+          showNotification(`连接断开，${RECONNECT_DELAY / 1000}秒后重试...`, 'warning');
+          setTimeout(() => {
+            reconnectAttempts++;
+            initWebSocket();
+          }, RECONNECT_DELAY);
+        } else {
+          showNotification('连接失败，请刷新页面重试', 'error');
         }
       };
 
-      return ws;
+      ws.onmessage = (event) => {
+        try {
+          const { type, data, error } = JSON.parse(event.data);
+
+          if (error) {
+            showNotification(error, 'error');
+            return;
+          }
+
+          switch (type) {
+            case 'INIT':
+            case 'ADD_TODO':
+            case 'UPDATE_TODO':
+            case 'DELETE_TODO':
+              todos = data;
+              renderTodos();
+              break;
+            default:
+              console.warn('Unknown message type:', type);
+          }
+        } catch (err) {
+          console.error('Failed to process message:', err);
+          showNotification('处理消息时出错', 'error');
+        }
+      };
     }
 
-    // 检查认证状态
-    // if (!checkAuth()) {
-    //   throw new Error('Unauthorized');
-    // }
-
-    const ws = initWebSocket();
-    let todos = [];
-
-    // WebSocket消息处理
-    ws.onmessage = (event) => {
-      const { type, data } = JSON.parse(event.data);
-      
-      switch (type) {
-        case 'INIT':
-          todos = data;
-          renderTodos();
-          break;
-        case 'ADD_TODO':
-        case 'UPDATE_TODO':
-        case 'DELETE_TODO':
-          todos = data;
-          renderTodos();
-          break;
+    // 发送WebSocket消息
+    function sendMessage(type, data) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type, data }));
+      } else {
+        showNotification('未连接到服务器', 'error');
       }
-    };
-
-    // WebSocket消息处理
-    ws.onmessage = (event) => {
-      const { type, data } = JSON.parse(event.data);
-      
-      switch (type) {
-        case 'INIT':
-          todos = data;
-          renderTodos();
-          break;
-        case 'ADD_TODO':
-        case 'UPDATE_TODO':
-        case 'DELETE_TODO':
-          todos = data;
-          renderTodos();
-          break;
-      }
-    };
+    }
 
     // 渲染待办事项
     function renderTodos() {
       const container = document.getElementById('todo-list');
+      if (todos.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无待办事项</div>';
+        return;
+      }
+
       container.innerHTML = todos.map(todo => `
         <div class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
-          <span>${todo.text}</span>
-          <div>
-            <button onclick="toggleComplete('${todo.id}')">
-              ${todo.completed ? '未完成' : '完成'}
+          <span>${escapeHtml(todo.text)}</span>
+          <div class="todo-meta">
+            <span class="todo-date">创建于: ${new Date(todo.createdAt).toLocaleString()}</span>
+            ${todo.completedAt ? `<span class="todo-date">完成于: ${new Date(todo.completedAt).toLocaleString()}</span>` : ''}
+          </div>
+          <div class="todo-actions">
+            <button onclick="toggleComplete('${todo.id}')" class="btn-toggle">
+              ${todo.completed ? '撤销完成' : '标记完成'}
             </button>
-            <button onclick="deleteTodo('${todo.id}')">删除</button>
+            <button onclick="deleteTodo('${todo.id}')" class="btn-delete">删除</button>
           </div>
         </div>
       `).join('');
@@ -157,7 +274,10 @@
     function addTodo() {
       const input = document.getElementById('new-todo');
       const text = input.value.trim();
-      if (!text) return;
+      if (!text) {
+        showNotification('请输入待办事项内容', 'warning');
+        return;
+      }
 
       const newTodo = {
         id: Date.now().toString(),
@@ -169,41 +289,50 @@
       };
 
       todos.push(newTodo);
-      ws.send(JSON.stringify({
-        type: 'ADD_TODO',
-        data: todos
-      }));
-
+      sendMessage('ADD_TODO', todos);
       input.value = '';
+      showNotification('已添加新的待办事项');
     }
 
     // 切换完成状态
     function toggleComplete(id) {
       todos = todos.map(todo => {
         if (todo.id === id) {
+          const completed = !todo.completed;
           return {
             ...todo,
-            completed: !todo.completed,
-            completedAt: todo.completed ? null : new Date().toISOString()
+            completed,
+            completedAt: completed ? new Date().toISOString() : null
           };
         }
         return todo;
       });
 
-      ws.send(JSON.stringify({
-        type: 'UPDATE_TODO',
-        data: todos
-      }));
+      sendMessage('UPDATE_TODO', todos);
+      showNotification('已更新待办事项状态');
     }
 
     // 删除待办事项
     function deleteTodo(id) {
+      if (!confirm('确定要删除这个待办事项吗？')) {
+        return;
+      }
+
       todos = todos.filter(todo => todo.id !== id);
-      ws.send(JSON.stringify({
-        type: 'DELETE_TODO',
-        data: todos
-      }));
+      sendMessage('DELETE_TODO', todos);
+      showNotification('已删除待办事项');
     }
+
+    // 添加回车提交功能
+    document.getElementById('new-todo').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        addTodo();
+      }
+    });
+
+    // 初始化连接
+    initWebSocket();
   </script>
 </body>
+
 </html>

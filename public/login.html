@@ -1,84 +1,250 @@
-<!--
- * @Author: Lieyan
- * @Date: 2025-01-19 19:30:01
- * @LastEditors: Lieyan
- * @LastEditTime: 2025-01-19 20:17:29
- * @FilePath: /FireStudyRoom/public/login.html
- * @Description: 
- * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
- * @Copyright: Copyright (c) 2025 by lieyanDevTeam, All Rights Reserved. 
--->
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
+
 <head>
-  <title>Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="烈焰自习室 - 双人线上自习室登录">
+  <title>FireStudyRoom - Login</title>
+  <link rel="stylesheet" href="/web/public/styles.css">
   <style>
     body {
-      font-family: Arial, sans-serif;
       background-color: #f4f4f4;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      min-height: 100vh;
       margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
+
     .login-container {
       background: white;
       padding: 2rem;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      width: 300px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
     }
+
+    h2 {
+      color: #333;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group {
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
     input {
       width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 3px;
+      padding: 0.8rem;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+      box-sizing: border-box;
     }
+
+    input:focus {
+      border-color: #2196f3;
+      outline: none;
+    }
+
     button {
       width: 100%;
-      padding: 10px;
-      background-color: #007bff;
+      padding: 0.8rem;
+      background: #2196f3;
       color: white;
       border: none;
-      border-radius: 3px;
+      border-radius: 4px;
+      font-size: 1rem;
       cursor: pointer;
+      transition: background 0.3s;
     }
+
     button:hover {
-      background-color: #0056b3;
+      background: #1976d2;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .error-message {
+      color: #f44336;
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+      min-height: 1.2em;
+    }
+
+    .loading {
+      position: relative;
+      pointer-events: none;
+    }
+
+    .loading::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 50%;
+      left: 50%;
+      margin: -10px 0 0 -10px;
+      border: 3px solid #ffffff;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      border-radius: 4px;
+      color: white;
+      z-index: 1000;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    .notification.error {
+      background: #f44336;
+    }
+
+    .notification.success {
+      background: #4caf50;
     }
   </style>
 </head>
+
 <body>
   <div class="login-container">
-    <h2>Login</h2>
-    <input type="password" id="secretKey" placeholder="Enter Secret Key">
-    <button onclick="login()">Login</button>
+    <h2>火焰自习室</h2>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="input-group">
+        <input type="password" id="secretKey" placeholder="请输入密钥" autocomplete="current-password" required
+          minlength="4">
+      </div>
+      <div class="error-message" id="errorMessage"></div>
+      <button type="submit" id="loginButton">登录</button>
+    </form>
   </div>
 
   <script>
-    async function login() {
-      const secretKey = document.getElementById('secretKey').value;
-      
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ secretKey })
-      });
-      
-      console.log("Response Headers:", response.headers); // Log response headers
+    let loginAttempts = 0;
+    const MAX_ATTEMPTS = 5;
+    const LOCKOUT_TIME = 300000; // 5分钟
+    let lockoutEndTime = 0;
 
-      const data = await response.json();
-      if (data.message === 'Login successful') {
-        // Redirect after successful login
-        window.location.href = '/studyroom';
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 3000);
+    }
+
+    function setLoading(loading) {
+      const button = document.getElementById('loginButton');
+      if (loading) {
+        button.classList.add('loading');
+        button.disabled = true;
+        button.textContent = '登录中...';
       } else {
-        alert(data.error || 'Login failed');
+        button.classList.remove('loading');
+        button.disabled = false;
+        button.textContent = '登录';
       }
+    }
+
+    function showError(message) {
+      const errorElement = document.getElementById('errorMessage');
+      errorElement.textContent = message;
+    }
+
+    async function handleLogin(event) {
+      event.preventDefault();
+
+      // 检查是否在锁定时间内
+      if (Date.now() < lockoutEndTime) {
+        const remainingTime = Math.ceil((lockoutEndTime - Date.now()) / 1000);
+        showError(`登录已被锁定，请在 ${remainingTime} 秒后重试`);
+        return;
+      }
+
+      const secretKey = document.getElementById('secretKey').value.trim();
+
+      if (!secretKey) {
+        showError('请输入密钥');
+        return;
+      }
+
+      setLoading(true);
+      showError('');
+
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ secretKey })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.message === 'Login successful') {
+          showNotification('登录成功，正在跳转...', 'success');
+          loginAttempts = 0;
+          setTimeout(() => {
+            window.location.href = '/web/studyroom';
+          }, 1000);
+        } else {
+          loginAttempts++;
+
+          if (loginAttempts >= MAX_ATTEMPTS) {
+            lockoutEndTime = Date.now() + LOCKOUT_TIME;
+            showError(`登录失败次数过多，请在 5 分钟后重试`);
+            showNotification('账户已被临时锁定', 'error');
+          } else {
+            showError(data.error || '密钥错误');
+            showNotification('登录失败', 'error');
+          }
+        }
+      } catch (error) {
+        showError('网络错误，请稍后重试');
+        showNotification('连接服务器失败', 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // 如果在锁定时间内，显示剩余锁定时间
+    if (lockoutEndTime > Date.now()) {
+      const remainingTime = Math.ceil((lockoutEndTime - Date.now()) / 1000);
+      showError(`登录已被锁定，请在 ${remainingTime} 秒后重试`);
     }
   </script>
 </body>
+
 </html>

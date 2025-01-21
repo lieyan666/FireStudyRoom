@@ -38,8 +38,8 @@
 /* 暗色主题 */
 @media (prefers-color-scheme: dark) {
   :root {
-    --primary-color: #2196f3;
-    --primary-dark: #1976d2;
+    --primary-color: #018eee;
+    --primary-dark: #018eeecc;
     --background-color: #1a1a1a;
     --surface-color: #2d2d2d;
     --text-primary: #ffffff;
@@ -137,11 +137,13 @@ input:focus {
 
 /* 自习室页面样式 */
 .todo-container {
-  margin-top: var(--spacing-lg);
+  margin: var(--spacing-lg) auto 0;
   background: var(--surface-color);
   padding: var(--spacing-lg);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
+  max-width: 600px;
+  width: 100%;
 }
 
 .todo-form {

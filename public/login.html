@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/web/public/styles.css">
   <style>
     body {
-      background-color: #f4f4f4;
+      background-color: var(--background-color);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -19,7 +19,7 @@
     }
 
     .login-container {
-      background: white;
+      background: var(--surface-color);
       padding: 2rem;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -29,12 +29,12 @@
     }
 
     h2 {
-      color: #333;
+      color: var(--text-primary);
       margin-bottom: 1.5rem;
     }
 
     .input-group {
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
       position: relative;
     }
 
@@ -76,7 +76,7 @@
 
     .error-message {
       color: #f44336;
-      margin: 0.5rem 0;
+      margin: 0.25rem 0;
       font-size: 0.9rem;
       min-height: 1.2em;
     }
@@ -139,7 +139,8 @@
 
 <body>
   <div class="login-container">
-    <h2>火焰自习室</h2>
+    <h2>FireStudyRoom</h2>
+    <br>
     <form id="loginForm" onsubmit="handleLogin(event)">
       <div class="input-group">
         <input type="password" id="secretKey" placeholder="请输入密钥" autocomplete="current-password" required

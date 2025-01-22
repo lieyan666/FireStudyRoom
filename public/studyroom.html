@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="/web/public/styles.css">
   <style>
     body {
-      max-width: 1200px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 20px;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -76,9 +76,12 @@
     }
 
     .todo-form {
-      margin-bottom: 20px;
+      margin-bottom: var(--spacing-lg);
       display: flex;
-      gap: 10px;
+      gap: var(--spacing-md);
+      background: var(--background-color);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius-md);
     }
 
     #new-todo {
@@ -142,6 +145,24 @@
       color: var(--text-secondary);
     }
 
+    .todo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .todo-user,
+    .plan-user {
+      display: inline-block;
+      padding: 2px 8px;
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: var(--border-radius-sm);
+      font-size: 12px;
+      margin-right: 8px;
+    }
+
     .todo-meta {
       font-size: 12px;
       color: #666;
@@ -150,6 +171,8 @@
       flex-direction: column;
       gap: 4px;
     }
+
+
 
     .todo-date {
       margin-right: 15px;
@@ -185,8 +208,11 @@
     .study-plan-form {
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: var(--spacing-md);
+      margin-bottom: var(--spacing-lg);
+      background: var(--background-color);
+      padding: var(--spacing-md);
+      border-radius: var(--border-radius-md);
     }
 
     .study-plan-form input {
@@ -206,8 +232,14 @@
       background: var(--surface-color);
       border: 1px solid var(--border-color);
       border-radius: var(--border-radius-md);
-      padding: var(--spacing-md);
+      padding: var(--spacing-lg);
       box-shadow: var(--shadow-md);
+      transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    }
+
+    .study-plan:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
     }
 
     .plan-header {
@@ -385,49 +417,334 @@
       color: #666;
       font-style: italic;
     }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--spacing-lg);
+      width: 100%;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .section {
+      padding: var(--spacing-lg);
+      background: var(--surface-color);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-md);
+      height: fit-content;
+    }
+
+    .section {
+      min-width: 0;
+    }
+
+    .bottom-row {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .chat-section {
+      width: 100%;
+    }
+
+    .server-selection {
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .server-selection select {
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--border-radius-md);
+      background: var(--surface-color);
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .chat-container {
+      width: 100%;
+    }
+
+    @media (max-width: 1200px) {
+      .top-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+      }
+
+      .bottom-row {
+        width: 100%;
+        padding: 0 var(--spacing-md);
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .top-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 调试面板样式 */
+    .debug-controls {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .server-info {
+      background: var(--background-color);
+      border-radius: var(--border-radius-md);
+      padding: var(--spacing-md);
+      margin-top: var(--spacing-sm);
+    }
+
+    .server-info h3 {
+      margin: 0 0 var(--spacing-sm) 0;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: var(--spacing-xs);
+      font-size: 0.9rem;
+    }
+
+    .info-item label {
+      color: var(--text-secondary);
+      margin-right: var(--spacing-md);
+    }
+
+    .info-item span {
+      color: var(--text-primary);
+    }
+
+    .api-server {
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .ws-server {
+      border-left: 4px solid var(--success-color);
+    }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <div class="section">
-      <h2>每日学习计划</h2>
-      <div class="study-plan-form">
-        <input type="text" id="plan-title" placeholder="学习计划标题">
-        <input type="text" id="plan-description" placeholder="详细描述">
-        <input type="number" id="plan-duration" placeholder="预计时长(分钟)" min="1">
-        <button onclick="addStudyPlan()">添加计划</button>
+    <div class="top-row">
+      <div class="section">
+        <h2>我的学习计划</h2>
+        <div class="study-plan-form">
+          <input type="text" id="plan-title" placeholder="学习计划标题">
+          <input type="text" id="plan-description" placeholder="详细描述">
+          <input type="number" id="plan-duration" placeholder="预计时长(分钟)" min="1">
+          <button onclick="addStudyPlan()">添加计划</button>
+        </div>
+        <div id="study-plans" class="study-plans"></div>
       </div>
-      <div id="study-plans" class="study-plans"></div>
+
+      <div class="section">
+        <h2>我的待办事项</h2>
+        <div class="todo-form">
+          <input type="text" id="new-todo" placeholder="输入新的待办事项">
+          <button onclick="addTodo()">添加</button>
+        </div>
+        <div class="todo-container" id="todo-list"></div>
+      </div>
+
+      <div class="section">
+        <h2>学习计划 <span class="todo-user" id="other-study-plans-user"></span></h2>
+        <div id="other-study-plans" class="study-plans"></div>
+      </div>
+
+      <div class="section">
+        <h2>待办事项 <span class="todo-user" id="other-todo-list-user"></span></h2>
+        <div class="todo-container" id="other-todo-list"></div>
+      </div>
     </div>
 
-    <div class="section">
-      <h2>待办事项</h2>
-      <div class="todo-form">
-        <input type="text" id="new-todo" placeholder="输入新的待办事项">
-        <button onclick="addTodo()">添加</button>
+    <div class="bottom-row">
+      <div class="section chat-section">
+        <h2>实时聊天</h2>
+        <div class="chat-container">
+          <div class="chat-messages" id="chat-messages"></div>
+          <div class="chat-input-container">
+            <input type="text" id="chat-input" placeholder="输入消息...">
+            <button onclick="sendChatMessage()">发送</button>
+          </div>
+        </div>
       </div>
-      <div class="todo-container" id="todo-list"></div>
     </div>
 
-    <div class="section chat-section">
-      <h2>实时聊天</h2>
-      <div class="chat-container">
-        <div class="chat-messages" id="chat-messages"></div>
-        <div class="chat-input-container">
-          <input type="text" id="chat-input" placeholder="输入消息...">
-          <button onclick="sendChatMessage()">发送</button>
+    <div class="debug-row">
+      <div class="section debug-section">
+        <h2>调试面板</h2>
+        <div class="debug-controls">
+          <div class="server-selection">
+            <label for="ws-server">WebSocket服务器:</label>
+            <select id="ws-server" onchange="changeServer(this.value)">
+              <option value="">加载中...</option>
+            </select>
+          </div>
+          <div class="system-info" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+            <div class="server-info api-server" style="flex: 1;">
+              <h3>API服务器信息</h3>
+              <div class="info-item">
+                <label>主机名:</label>
+                <span id="api-hostname">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>系统:</label>
+                <span id="api-platform">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>系统版本:</label>
+                <span id="api-release">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>CPU信息:</label>
+                <span id="api-cpu">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>内存:</label>
+                <span id="api-memory">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>系统负载:</label>
+                <span id="api-load">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>Node.js版本:</label>
+                <span id="api-node">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>运行时间:</label>
+                <span id="api-uptime">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>更新时间:</label>
+                <span id="api-timestamp">获取中...</span>
+              </div>
+            </div>
+            <div class="server-info ws-server">
+              <h3>WebSocket服务器信息</h3>
+              <div class="info-item">
+                <label>主机名:</label>
+                <span id="ws-hostname">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>系统:</label>
+                <span id="ws-platform">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>系统版本:</label>
+                <span id="ws-release">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>CPU信息:</label>
+                <span id="ws-cpu">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>内存:</label>
+                <span id="ws-memory">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>系统负载:</label>
+                <span id="ws-load">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>Node.js版本:</label>
+                <span id="ws-node">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>运行时间:</label>
+                <span id="ws-uptime">获取中...</span>
+              </div>
+              <div class="info-item">
+                <label>更新时间:</label>
+                <span id="ws-timestamp">获取中...</span>
+              </div>
+            </div>
+          </div>
+          <div class="user-selection">
+            <label for="other-user-select">选择用户:</label>
+            <select id="other-user-select" onchange="changeSelectedUser(this.value)">
+              <option value="">所有用户</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
   </div>
-
   <script>
     let ws = null;
+    let currentUserId = localStorage.getItem('userId');
+    let currentUserName = localStorage.getItem('userName');
     let todos = [];
     let studyPlans = [];
     let chatMessages = [];
+    let otherUserTodos = [];
+    let otherUserStudyPlans = [];
     let reconnectAttempts = 0;
+    let wsServers = [];
+    let selectedServer = localStorage.getItem('selectedServer');
+    let selectedUserId = localStorage.getItem('selectedUserId') || '';
+    let connectedUsers = [];
+
+    // 获取服务器列表
+    async function fetchServers() {
+      try {
+        const response = await fetch('/api/ws-servers');
+        if (!response.ok) throw new Error('Failed to fetch servers');
+        const data = await response.json();
+        wsServers = data.servers;
+
+        const serverSelect = document.getElementById('ws-server');
+        serverSelect.innerHTML = wsServers.map(server =>
+          `<option value="${server.url}" ${server.url === selectedServer ? 'selected' : ''}>
+            ${escapeHtml(server.name)}
+          </option>`
+        ).join('');
+
+        // 如果没有选中的服务器，选择第一个
+        if (!selectedServer && wsServers.length > 0) {
+          selectedServer = wsServers[0].url;
+          localStorage.setItem('selectedServer', selectedServer);
+        }
+      } catch (err) {
+        console.error('Failed to fetch servers:', err);
+        showNotification('获取服务器列表失败', 'error');
+      }
+    }
+
+    // 切换服务器
+    function changeServer(url) {
+      selectedServer = url;
+      localStorage.setItem('selectedServer', url);
+      reconnectAttempts = 0;
+      initWebSocket();
+    }
+
+    // 检查登录状态
+    if (!currentUserId || !currentUserName) {
+      window.location.href = '/web/login';
+    } else {
+      // 页面加载完成后立即获取服务器列表和API服务器信息
+      fetchServers();
+      fetchApiServerInfo();
+    }
     const MAX_RECONNECT_ATTEMPTS = 5;
     const RECONNECT_DELAY = 3000;
     const MAX_MESSAGES = 100; // 最多显示100条消息
@@ -436,12 +753,13 @@
     function sendChatMessage() {
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
-      
+
       if (!text) return;
 
       sendMessage('CHAT_MESSAGE', {
         text,
-        sender: '当前用户' // TODO: 从登录系统获取
+        sender: currentUserName,
+        userId: currentUserId
       });
 
       input.value = '';
@@ -452,7 +770,7 @@
       const date = new Date(timestamp);
       const now = new Date();
       const diff = now - date;
-      
+
       // 1分钟内
       if (diff < 60000) {
         return '刚刚';
@@ -492,14 +810,14 @@
     // 渲染聊天消息
     function renderChatMessages() {
       const container = document.getElementById('chat-messages');
-      
+
       if (chatMessages.length === 0) {
         container.innerHTML = '<div class="empty-chat">暂无消息</div>';
         return;
       }
 
       container.innerHTML = chatMessages.map(msg => {
-        const isSent = msg.sender === '当前用户';
+        const isSent = msg.sender === currentUserName;
         const avatarColor = generateUserColor(msg.sender);
         return `
           <div class="chat-message ${isSent ? 'sent' : 'received'}">
@@ -538,6 +856,126 @@
       const hours = Math.floor(minutes / 60);
       const remainingMinutes = minutes % 60;
       return `${hours}小时${remainingMinutes > 0 ? ` ${remainingMinutes}分钟` : ''}`;
+    }
+
+    // 获取用户列表
+    async function fetchUsers() {
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) throw new Error('Failed to fetch users');
+        const data = await response.json();
+        connectedUsers = data.users;
+      } catch (err) {
+        console.error('Failed to fetch users:', err);
+        showNotification('获取用户列表失败', 'error');
+      }
+    }
+
+    // 更新已连接用户列表
+    function updateConnectedUsers() {
+      // 获取最新的用户列表
+      fetchUsers().then(() => {
+        // 更新选择框
+        const select = document.getElementById('other-user-select');
+
+        // 获取其他用户列表
+        const otherUsers = connectedUsers.filter(user => user.id !== currentUserId);
+
+        // 如果没有选中的用户ID或选中的用户不在列表中，自动选择第一个其他用户
+        if (!selectedUserId || !otherUsers.find(user => user.id === selectedUserId)) {
+          selectedUserId = otherUsers.length > 0 ? otherUsers[0].id : '';
+          localStorage.setItem('selectedUserId', selectedUserId);
+        }
+
+        // 保持"所有用户"选项
+        let options = '<option value="">所有用户</option>';
+
+        // 添加用户选项，排除当前用户
+        otherUsers.forEach(user => {
+          options += `<option value="${user.id}" ${user.id === selectedUserId ? 'selected' : ''}>
+            ${escapeHtml(user.name)}
+          </option>`;
+        });
+
+        select.innerHTML = options;
+
+        // 更新用户名显示
+        const selectedUser = selectedUserId ? connectedUsers.find(user => user.id === selectedUserId) : null;
+        document.getElementById('other-study-plans-user').textContent = selectedUser ? selectedUser.name : '';
+        document.getElementById('other-todo-list-user').textContent = selectedUser ? selectedUser.name : '';
+
+        // 重新渲染其他用户的内容
+        renderOtherUserTodos();
+        renderOtherUserStudyPlans();
+      });
+    }
+
+    // 切换选中的用户
+    function changeSelectedUser(userId) {
+      selectedUserId = userId;
+      localStorage.setItem('selectedUserId', userId);
+      renderOtherUserTodos();
+      renderOtherUserStudyPlans();
+    }
+
+    // 渲染其他用户的待办事项
+    function renderOtherUserTodos() {
+      const container = document.getElementById('other-todo-list');
+      const filteredTodos = selectedUserId
+        ? otherUserTodos.filter(todo => todo.userId === selectedUserId)
+        : otherUserTodos;
+
+      if (filteredTodos.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无其他用户的待办事项</div>';
+        return;
+      }
+
+      container.innerHTML = filteredTodos.map(todo => `
+        <div class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
+          <div class="todo-header">
+            <span class="todo-user">${escapeHtml(todo.userName)}</span>
+          </div>
+          <span>${escapeHtml(todo.text)}</span>
+          <div class="todo-meta">
+            <span class="todo-date">创建于: ${new Date(todo.createdAt).toLocaleString()}</span>
+            ${todo.completedAt ? `<span class="todo-date">完成于: ${new Date(todo.completedAt).toLocaleString()}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 渲染其他用户的学习计划
+    function renderOtherUserStudyPlans() {
+      const container = document.getElementById('other-study-plans');
+      const filteredPlans = selectedUserId
+        ? otherUserStudyPlans.filter(plan => plan.userId === selectedUserId)
+        : otherUserStudyPlans;
+
+      if (filteredPlans.length === 0) {
+        container.innerHTML = '<div class="empty-state">暂无其他用户的学习计划</div>';
+        return;
+      }
+
+      container.innerHTML = filteredPlans.map(plan => `
+        <div class="study-plan" data-id="${plan.id}">
+          <div class="plan-header">
+            <div class="plan-title">
+              <span class="plan-user">${escapeHtml(plan.userName)}</span>
+              ${escapeHtml(plan.title)}
+            </div>
+          </div>
+          <div class="plan-description">${escapeHtml(plan.description)}</div>
+          <div class="plan-meta">
+            <span>预计时长: ${formatDuration(plan.duration)}</span>
+            <span>创建于: ${new Date(plan.createdAt).toLocaleString()}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${plan.progress}%">
+              ${plan.progress}%
+            </div>
+          </div>
+        </div>
+      `).join('');
     }
 
     // 渲染学习计划
@@ -587,7 +1025,18 @@
         return;
       }
 
+      const userId = localStorage.getItem('userId');
+      const userName = localStorage.getItem('userName');
+
+      if (!userId || !userName) {
+        window.location.href = '/web/login';
+        return;
+      }
+
       const newPlan = {
+        id: Date.now().toString(),
+        userId,
+        userName,
         title,
         description,
         duration
@@ -629,7 +1078,7 @@
       notification.className = `notification ${type}`;
       notification.textContent = message;
       document.body.appendChild(notification);
-      
+
       // 3秒后开始移除动画
       setTimeout(() => {
         notification.style.animation = 'slideOut var(--transition-normal) forwards';
@@ -650,13 +1099,61 @@
         .replace(/'/g, "&#039;");
     }
 
+    // 获取API服务器信息
+    async function fetchApiServerInfo() {
+      try {
+        const response = await fetch('/api/server-info');
+        if (!response.ok) throw new Error('Failed to fetch API server info');
+        const data = await response.json();
+        updateApiServerInfo(data);
+      } catch (err) {
+        console.error('Failed to fetch API server info:', err);
+        showNotification('获取API服务器信息失败', 'error');
+      }
+    }
+
+    // 更新API服务器信息显示
+    function updateApiServerInfo(data) {
+      if (!data) return;
+
+      document.getElementById('api-hostname').textContent = data.hostname || '未知';
+      document.getElementById('api-platform').textContent = `${data.platform || '未知'} (${data.arch || '未知'})`;
+      document.getElementById('api-release').textContent = data.release || '未知';
+      document.getElementById('api-cpu').textContent = `${data.cpus?.count || 0}核 ${data.cpus?.model || '未知'} ${data.cpus?.speed || ''}`;
+      document.getElementById('api-memory').textContent = `${data.memory?.total || '未知'} (可用: ${data.memory?.free || '未知'})`;
+      document.getElementById('api-load').textContent = data.loadavg?.join(', ') || '未知';
+      document.getElementById('api-node').textContent = data.nodeVersion || '未知';
+      document.getElementById('api-uptime').textContent = data.uptime || '未知';
+      document.getElementById('api-timestamp').textContent = new Date(data.timestamp).toLocaleString() || '未知';
+    }
+
+    // 更新WebSocket服务器信息显示
+    function updateWsServerInfo(data) {
+      if (!data) return;
+      console.log(data);
+      document.getElementById('ws-hostname').textContent = data.hostname || '未知';
+      document.getElementById('ws-platform').textContent = `${data.platform || '未知'} (${data.arch || '未知'})`;
+      document.getElementById('ws-release').textContent = data.release || '未知';
+      document.getElementById('ws-cpu').textContent = `${data.cpus?.count || 0}核 ${data.cpus?.model || '未知'} ${data.cpus?.speed || ''}`;
+      document.getElementById('ws-memory').textContent = `${data.memory?.total || '未知'} (可用: ${data.memory?.free || '未知'})`;
+      document.getElementById('ws-load').textContent = data.loadavg?.join(', ') || '未知';
+      document.getElementById('ws-node').textContent = data.nodeVersion || '未知';
+      document.getElementById('ws-uptime').textContent = data.uptime || '未知';
+      document.getElementById('ws-timestamp').textContent = new Date(data.timestamp).toLocaleString() || '未知';
+    }
+
     // 初始化WebSocket连接
     function initWebSocket() {
       if (ws) {
         ws.close();
       }
 
-      ws = new WebSocket(`wss://${window.location.host}/ws`);
+      if (!selectedServer) {
+        showNotification('未选择服务器', 'error');
+        return;
+      }
+
+      ws = new WebSocket(selectedServer);
 
       ws.onopen = () => {
         console.log('WebSocket connected');
@@ -696,27 +1193,62 @@
           }
 
           switch (type) {
+            case 'SYSTEM_INFO':
+              // console.log(data);
+              // if (data.type === 'WS_SERVER') {
+              updateWsServerInfo(data);
+              // }
+              break;
+
             case 'INIT_ALL':
-              todos = data.todos;
-              studyPlans = data.studyPlans;
+              // 分离当前用户和其他用户的数据
+              todos = data.todos.filter(todo => todo.userId === currentUserId);
+              otherUserTodos = data.todos.filter(todo => todo.userId !== currentUserId);
+
+              studyPlans = data.studyPlans.filter(plan => plan.userId === currentUserId);
+              otherUserStudyPlans = data.studyPlans.filter(plan => plan.userId !== currentUserId);
+
               chatMessages = data.chatHistory || [];
+
+              // 更新用户列表
+              updateConnectedUsers();
+
               renderTodos();
               renderStudyPlans();
+              renderOtherUserTodos();
+              renderOtherUserStudyPlans();
               renderChatMessages();
               break;
+
             case 'ADD_TODO':
             case 'UPDATE_TODO':
             case 'DELETE_TODO':
-              todos = data;
+              // 分离当前用户和其他用户的待办事项
+              todos = data.filter(todo => todo.userId === currentUserId);
+              otherUserTodos = data.filter(todo => todo.userId !== currentUserId);
               renderTodos();
+              renderOtherUserTodos();
               break;
+
             case 'UPDATE_STUDY_PLANS':
-              studyPlans = data;
+              // 分离当前用户和其他用户的学习计划
+              studyPlans = data.filter(plan => plan.userId === currentUserId);
+              otherUserStudyPlans = data.filter(plan => plan.userId !== currentUserId);
               renderStudyPlans();
+              renderOtherUserStudyPlans();
               break;
+
             case 'CHAT_MESSAGE':
               addChatMessage(data);
               break;
+
+            case 'SERVER_INFO':
+              // 更新服务器信息
+              document.getElementById('client-ip').textContent = data.clientIp || '未知';
+              document.getElementById('server-hostname').textContent = data.hostname || '未知';
+              document.getElementById('server-info').textContent = data.systemInfo || '未知';
+              break;
+
             default:
               console.warn('Unknown message type:', type);
           }
@@ -770,24 +1302,35 @@
         return;
       }
 
+      const userId = localStorage.getItem('userId');
+      const userName = localStorage.getItem('userName');
+
+      if (!userId || !userName) {
+        window.location.href = '/web/login';
+        return;
+      }
+
       const newTodo = {
         id: Date.now().toString(),
         text,
         completed: false,
         createdAt: new Date().toISOString(),
-        createdBy: '当前用户', // TODO: 从登录系统获取
+        userId,
+        userName,
         completedAt: null
       };
 
-      todos.push(newTodo);
-      sendMessage('ADD_TODO', todos);
+      sendMessage('ADD_TODO', [...todos, newTodo]);
       input.value = '';
       showNotification('已添加新的待办事项');
     }
 
     // 切换完成状态
     function toggleComplete(id) {
-      todos = todos.map(todo => {
+      const updatedTodo = todos.find(todo => todo.id === id);
+      if (!updatedTodo) return;
+
+      const updatedTodos = todos.map(todo => {
         if (todo.id === id) {
           const completed = !todo.completed;
           return {
@@ -799,7 +1342,7 @@
         return todo;
       });
 
-      sendMessage('UPDATE_TODO', todos);
+      sendMessage('UPDATE_TODO', updatedTodos);
       showNotification('已更新待办事项状态');
     }
 
@@ -809,8 +1352,8 @@
         return;
       }
 
-      todos = todos.filter(todo => todo.id !== id);
-      sendMessage('DELETE_TODO', todos);
+      const updatedTodos = todos.filter(todo => todo.id !== id);
+      sendMessage('DELETE_TODO', updatedTodos);
       showNotification('已删除待办事项');
     }
 
@@ -844,7 +1387,7 @@
     document.getElementById('plan-duration').addEventListener('keydown', (e) => {
       const input = e.target;
       const value = parseInt(input.value) || 0;
-      
+
       if (e.key === 'ArrowUp') {
         e.preventDefault();
         input.value = value + 15; // 增加15分钟

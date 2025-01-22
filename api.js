@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-19 20:47:40
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-01-20 19:18:00
+ * @LastEditTime: 2025-01-22 22:44:12
  * @FilePath: /FireStudyRoom/api.js
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -108,7 +108,12 @@ apiRouter.post('/login', rateLimiter, (req, res) => {
       signed: true
     });
 
-    res.json({ message: 'Login successful' });
+    // 从配置中获取用户列表
+    const users = config.users || [];
+    res.json({ 
+      message: 'Login successful',
+      users: users
+    });
   } else {
     // 记录失败登录
     logger.warn(`Failed login attempt from IP: ${ip}`);
@@ -133,6 +138,28 @@ apiRouter.post('/logout', (req, res) => {
 apiRouter.get('/auth-status', (req, res) => {
   res.json({
     authenticated: !!req.signedCookies.authenticated
+  });
+});
+
+// 获取WebSocket服务器列表
+apiRouter.get('/ws-servers', requireAuth, (req, res) => {
+  const servers = config.wsServers || [];
+  res.json({ servers });
+});
+
+// 获取用户列表
+apiRouter.get('/users', requireAuth, (req, res) => {
+  const users = config.users || [];
+  res.json({ users });
+});
+
+// 获取服务器信息
+apiRouter.get('/server-info', (req, res) => {
+  const { getSystemInfo } = require('./utils/systemInfo');
+  const serverInfo = getSystemInfo();
+  res.json({
+    type: 'API_SERVER',
+    ...serverInfo
   });
 });
 

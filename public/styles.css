@@ -45,6 +45,9 @@
     --text-primary: #ffffff;
     --text-secondary: #b0b0b0;
     --border-color: #404040;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -62,6 +65,11 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
 }
 
 /* 通用按钮样式 */
@@ -100,6 +108,7 @@ input {
   transition: border-color var(--transition-fast);
   background-color: var(--surface-color);
   color: var(--text-primary);
+  width: 100%;
 }
 
 input:focus {
@@ -116,7 +125,6 @@ input:focus {
   box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 400px;
-  margin: var(--spacing-xl) auto;
 }
 
 .login-container h2 {
@@ -126,13 +134,17 @@ input:focus {
 }
 
 .login-container input {
-  width: 100%;
   margin-bottom: var(--spacing-md);
 }
 
 .login-container button {
   width: 100%;
   padding: var(--spacing-md);
+}
+
+.input-group {
+  margin-bottom: var(--spacing-sm);
+  position: relative;
 }
 
 /* 自习室页面样式 */

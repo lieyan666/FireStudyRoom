@@ -429,7 +429,7 @@
 
     .top-row {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: var(--spacing-lg);
       width: 100%;
       margin-bottom: var(--spacing-lg);
@@ -477,7 +477,13 @@
       width: 100%;
     }
 
-    @media (max-width: 1200px) {
+    @media (max-width: 1180px) {
+      .top-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
       .top-row {
         grid-template-columns: 1fr;
         gap: var(--spacing-md);
@@ -486,12 +492,6 @@
       .bottom-row {
         width: 100%;
         padding: 0 var(--spacing-md);
-      }
-    }
-
-    @media (max-width: 1200px) {
-      .top-row {
-        grid-template-columns: 1fr;
       }
     }
 
@@ -537,6 +537,57 @@
 
     .ws-server {
       border-left: 4px solid var(--success-color);
+    }
+
+    .version-grid {
+      display: grid;
+      gap: var(--spacing-xs);
+      padding: var(--spacing-xs);
+      background: var(--background-color);
+      border-radius: var(--border-radius-sm);
+    }
+
+    .version-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      font-size: 0.875rem;
+    }
+
+    .version-label {
+      color: var(--text-secondary);
+      min-width: 70px;
+    }
+
+    .version-value {
+      color: var(--text-primary);
+      font-family: monospace;
+    }
+
+    .git-info {
+      border-top: 1px solid var(--border-color);
+      padding-top: var(--spacing-xs);
+      margin-top: var(--spacing-xs);
+    }
+
+    .git-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-xs) var(--spacing-sm);
+      align-items: center;
+    }
+
+    .git-details span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-primary);
+      font-family: monospace;
+      font-size: 0.8125rem;
+    }
+
+    .git-details svg {
+      color: var(--text-secondary);
     }
   </style>
 </head>
@@ -592,6 +643,39 @@
       <div class="section debug-section">
         <h2>调试面板</h2>
         <div class="debug-controls">
+          <div class="version-info">
+            <div class="server-info version-info">
+              <h3 style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                版本信息
+                <button onclick="checkUpdate()" style="padding: 4px; min-width: auto; background: none; color: var(--text-primary);" title="检查更新" id="update-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+                  </svg>
+                </button>
+              </h3>
+              <div class="version-grid">
+                <div class="version-item">
+                  <span class="version-label">当前版本</span>
+                  <span id="current-version" class="version-value">获取中...</span>
+                </div>
+                <div class="version-item git-info">
+                  <span class="version-label">Git信息</span>
+                  <div class="git-details">
+                    <span class="git-branch" title="分支"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v12"/><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M18 9c3 0 3-4 3-4s0-4-3-4-3 4-3 4 0 4 3 4z"/></svg><span id="git-branch">获取中...</span></span>
+                    <span class="git-commit" title="提交"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M1.05 12H7"/><path d="M17.01 12h5.95"/></svg><span id="git-commit">获取中...</span></span>
+                    <span class="git-date" title="提交时间"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span id="git-date">获取中...</span></span>
+                    <span class="git-status" title="状态"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 16v.01"/><path d="M12 8v4"/></svg><span id="git-status">获取中...</span></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="user-selection" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+            <label for="other-user-select">选择用户:</label>
+            <select id="other-user-select" onchange="changeSelectedUser(this.value)" style="padding: 8px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: var(--surface-color); color: var(--text-primary); flex: 1;">
+              <option value="">所有用户</option>
+            </select>
+          </div>
           <div class="server-selection">
             <label for="ws-server">WebSocket服务器:</label>
             <select id="ws-server" onchange="changeServer(this.value)">
@@ -677,12 +761,6 @@
                 <span id="ws-timestamp">获取中...</span>
               </div>
             </div>
-          </div>
-          <div class="user-selection">
-            <label for="other-user-select">选择用户:</label>
-            <select id="other-user-select" onchange="changeSelectedUser(this.value)">
-              <option value="">所有用户</option>
-            </select>
           </div>
         </div>
       </div>
@@ -1126,6 +1204,54 @@
       document.getElementById('api-uptime').textContent = data.uptime || '未知';
       document.getElementById('api-timestamp').textContent = new Date(data.timestamp).toLocaleString() || '未知';
     }
+
+    // 检查更新
+    async function checkUpdate() {
+      const button = document.getElementById('update-btn');
+      const currentVersionSpan = document.getElementById('current-version');
+      const gitBranchSpan = document.getElementById('git-branch');
+      const gitCommitSpan = document.getElementById('git-commit');
+      const gitDateSpan = document.getElementById('git-date');
+      const gitStatusSpan = document.getElementById('git-status');
+
+      // 设置按钮加载状态
+      button.disabled = true;
+      button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c0 0 3-5.5 10-5.5S22 12 22 12c0 0-3 5.5-10 5.5S2 12 2 12zm10 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>';
+
+      try {
+        const response = await fetch('/api/version');
+        if (!response.ok) throw new Error('获取版本信息失败');
+        const data = await response.json();
+
+        // 更新版本信息显示
+        currentVersionSpan.textContent = data.version || '未知';
+
+        // 更新Git信息
+        if (data.git && !data.git.error) {
+          gitBranchSpan.textContent = data.git.branch || '未知';
+          gitCommitSpan.textContent = data.git.commit.shortHash || '未知';
+          gitDateSpan.textContent = new Date(data.git.commit.date).toLocaleString() || '未知';
+          gitStatusSpan.innerHTML = data.git.isDirty ? 
+            '<span style="color: var(--error-color)">有未提交的更改</span>' : 
+            '<span style="color: var(--success-color)">代码库干净</span>';
+        } else {
+          gitBranchSpan.textContent = '未知';
+          gitCommitSpan.textContent = '未知';
+          gitDateSpan.textContent = '未知';
+          gitStatusSpan.innerHTML = '<span style="color: var(--error-color)">' + (data.git?.error || '无法获取Git信息') + '</span>';
+        }
+      } catch (error) {
+        console.error('检查更新失败:', error);
+        updateStatusSpan.textContent = '检查更新失败';
+        showNotification('检查更新失败: ' + error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/></svg>';
+      }
+    }
+
+    // 页面加载完成后自动检查更新
+    document.addEventListener('DOMContentLoaded', checkUpdate);
 
     // 更新WebSocket服务器信息显示
     function updateWsServerInfo(data) {

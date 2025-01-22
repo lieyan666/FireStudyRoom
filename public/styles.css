@@ -122,7 +122,8 @@ body {
   gap: var(--spacing-md);
 }
 
-.user-buttons button {
+.user-buttons button,
+.login-container button {
   width: 100%;
 }
 
@@ -226,7 +227,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: var(--spacing-xs);
-  min-width: 80px;
+  min-width: 68px;
 }
 
 button:hover {

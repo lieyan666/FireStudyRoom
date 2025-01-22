@@ -11,6 +11,7 @@
 const express = require('express');
 const logger = require('./utils/logger');
 const config = require('./config/config');
+const { getVersionInfo } = require('./utils/version');
 
 const apiRouter = express.Router();
 
@@ -98,6 +99,21 @@ apiRouter.post('/login', rateLimiter, (req, res) => {
 
     // 记录成功登录
     logger.info(`Successful login from IP: ${ip}`);
+
+// 获取版本信息路由
+apiRouter.get('/version', (req, res) => {
+  try {
+    const versionInfo = getVersionInfo();
+    res.json(versionInfo);
+    logger.info('Version info requested');
+  } catch (error) {
+    logger.error('Error getting version info:', error);
+    res.status(500).json({
+      error: '获取版本信息失败',
+      message: error.message
+    });
+  }
+});
 
     // 设置cookie
     res.cookie('authenticated', 'true', {

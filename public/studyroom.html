@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>StudyRoom</title>
   <link rel="stylesheet" href="/web/public/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
   <style>
     body {
       max-width: 1600px;
@@ -307,7 +309,7 @@
     }
 
     .chat-container {
-      height: 400px;
+      height: 600px;
       border: 1px solid var(--border-color);
       border-radius: var(--border-radius-lg);
       background: var(--surface-color);
@@ -457,6 +459,79 @@
       width: 100%;
     }
 
+    .chat-header {
+      padding: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .user-avatar-container {
+      position: relative;
+    }
+
+    .user-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--border-color);
+      overflow: hidden;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: var(--text-primary);
+      border: 2px solid var(--primary-color);
+      transition: all var(--transition-normal);
+    }
+
+    .user-avatar:hover {
+      border-color: var(--primary-light);
+      transform: scale(1.05);
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--transition-normal);
+      border-radius: 50%;
+    }
+
+    .user-avatar:hover .avatar-overlay {
+      opacity: 1;
+    }
+
+    .avatar-overlay span {
+      color: white;
+      font-size: 12px;
+      padding: 4px 8px;
+    }
+
+    .user-name {
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-left: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      flex: 1;
+    }
+
     .server-selection {
       margin-bottom: 15px;
       display: flex;
@@ -589,6 +664,88 @@
     .git-details svg {
       color: var(--text-secondary);
     }
+
+    /* 图片裁剪模态框样式 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: var(--surface-color);
+      border-radius: var(--border-radius-lg);
+      padding: 20px;
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      margin-bottom: 20px;
+    }
+
+    .img-container {
+      max-height: 400px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .preview-container {
+      width: 100px;
+      height: 100px;
+      overflow: hidden;
+      border: 2px solid var(--primary-color);
+      border-radius: 50%;
+      margin: 0 auto 15px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 0;
+    }
+
+    .btn-close:hover {
+      color: var(--text-primary);
+    }
+
+    #cropperImage {
+      max-width: 100%;
+    }
   </style>
 </head>
 
@@ -630,6 +787,21 @@
       <div class="section chat-section">
         <h2>实时聊天</h2>
         <div class="chat-container">
+          <div class="chat-header">
+            <div class="user-avatar-container">
+              <div class="user-avatar" onclick="document.getElementById('avatar-upload').click()">
+               <img id="current-avatar" src=""
+                   onerror="this.style.display='none'; this.parentElement.style.backgroundColor=generateUserColor(currentUserName); this.parentElement.innerHTML=generateAvatar(currentUserName)"
+                   alt="我的头像"
+                   style="width: 100%; height: 100%; object-fit: cover;">
+               <div class="avatar-overlay">
+                 <span>更换头像</span>
+               </div>
+             </div>
+             <input type="file" id="avatar-upload" accept="image/*" style="display: none" onchange="uploadAvatar(event)">
+           </div>
+           <div class="user-name" id="current-user-name"></div>
+          </div>
           <div class="chat-messages" id="chat-messages"></div>
           <div class="chat-input-container">
             <input type="text" id="chat-input" placeholder="输入消息...">
@@ -770,9 +942,81 @@
     let ws = null;
     let currentUserId = localStorage.getItem('userId');
     let currentUserName = localStorage.getItem('userName');
+    let currentUserAvatar = localStorage.getItem('userAvatar');
     let todos = [];
     let studyPlans = [];
     let chatMessages = [];
+
+    // 上传头像
+    async function uploadAvatar(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // 验证文件类型和大小
+        if (!file.type.startsWith('image/')) {
+            showNotification('请选择图片文件', 'error');
+            return;
+        }
+        
+        if (file.size > 5 * 1024 * 1024) {
+            showNotification('图片大小不能超过5MB', 'error');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('avatar', file);
+        
+        try {
+            const response = await fetch(`/api/avatar/upload/${currentUserId}`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error('上传失败');
+            }
+            
+            const result = await response.json();
+            if (result.success) {
+                // 更新用户头像
+                currentUserAvatar = result.filename;
+                localStorage.setItem('userAvatar', result.filename);
+                
+                // 获取或创建头像图片元素
+                const avatarContainer = document.querySelector('.user-avatar');
+                let avatarImg = document.getElementById('current-avatar');
+                
+                // 如果不存在则创建新的img元素
+                if (!avatarImg) {
+                    avatarImg = document.createElement('img');
+                    avatarImg.id = 'current-avatar';
+                    avatarContainer.innerHTML = ''; // 清空容器
+                    avatarContainer.appendChild(avatarImg);
+                }
+                
+                // 设置图片属性
+                avatarImg.src = `${result.path}?t=${Date.now()}`; // 添加时间戳避免缓存
+                avatarImg.alt = '我的头像';
+                avatarImg.style.width = '100%';
+                avatarImg.style.height = '100%';
+                avatarImg.style.objectFit = 'cover';
+                
+                // 添加遮罩层
+                const overlay = document.createElement('div');
+                overlay.className = 'avatar-overlay';
+                overlay.innerHTML = '<span>更换头像</span>';
+                avatarContainer.appendChild(overlay);
+                
+                showNotification('头像更新成功');
+            } else {
+                throw new Error(result.error || '上传失败');
+            }
+        } catch (error) {
+            console.error('Avatar upload failed:', error);
+            showNotification(error.message, 'error');
+        }
+    }
+    
     let otherUserTodos = [];
     let otherUserStudyPlans = [];
     let reconnectAttempts = 0;
@@ -899,8 +1143,11 @@
         const avatarColor = generateUserColor(msg.sender);
         return `
           <div class="chat-message ${isSent ? 'sent' : 'received'}">
-            <div class="message-avatar" style="background-color: ${avatarColor}">
-              ${generateAvatar(msg.sender)}
+            <div class="message-avatar">
+              <img src="/api/avatar/get/${msg.userId}"
+                  onerror="this.onerror=null; this.remove(); this.parentElement.style.backgroundColor='${avatarColor}'; this.parentElement.innerHTML='${generateAvatar(msg.sender)}'"
+                  alt="${msg.sender}的头像"
+                  style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
             </div>
             <div class="message-content-wrapper">
               <div class="message-bubble">
@@ -1531,9 +1778,182 @@
       }
     });
 
-    // 初始化连接
+    // 初始化用户信息显示
+    function initUserInfo() {
+      // 设置用户名
+      const userNameElement = document.getElementById('current-user-name');
+      if (userNameElement && currentUserName) {
+        userNameElement.textContent = currentUserName;
+      }
+
+      // 设置头像
+      const avatarImg = document.getElementById('current-avatar');
+      if (avatarImg && currentUserId) {
+        avatarImg.src = `/api/avatar/get/${currentUserId}`;
+      }
+    }
+
+    // 初始化页面
+    initUserInfo();
     initWebSocket();
+
+    // 图片裁剪相关
+    let cropper = null;
+
+    // 显示图片裁剪模态框
+    function showImageCropper(file) {
+      const modal = document.getElementById('avatarModal');
+      const image = document.getElementById('cropperImage');
+      image.style.display = 'block';
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        image.src = e.target.result;
+        
+        // 销毁之前的cropper实例
+        if (cropper) {
+          cropper.destroy();
+        }
+        
+        // 初始化cropper
+        cropper = new Cropper(image, {
+          aspectRatio: 1,
+          viewMode: 1,
+          preview: '.preview-container',
+          dragMode: 'move',
+          autoCropArea: 1,
+          responsive: true,
+          restore: false,
+          guides: false,
+          center: false,
+          highlight: false,
+          cropBoxMovable: false,
+          cropBoxResizable: false,
+          toggleDragModeOnDblclick: false,
+        });
+      };
+      reader.readAsDataURL(file);
+      
+      modal.classList.add('show');
+    }
+
+    // 关闭模态框
+    function closeAvatarModal() {
+      const modal = document.getElementById('avatarModal');
+      modal.classList.remove('show');
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+    }
+
+    // 拦截文件选择，显示裁剪界面
+    document.getElementById('avatar-upload').onchange = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      if (!file.type.startsWith('image/')) {
+        showNotification('请选择图片文件', 'error');
+        return;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('图片大小不能超过5MB', 'error');
+        return;
+      }
+
+      showImageCropper(file);
+    };
+
+    // 上传裁剪后的头像
+    async function uploadCroppedAvatar() {
+      if (!cropper) return;
+      
+      try {
+        // 获取裁剪后的图片blob
+        const canvas = cropper.getCroppedCanvas({
+          width: 200,
+          height: 200
+        });
+        
+        // 转换为file对象
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+        const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+        
+        const formData = new FormData();
+        formData.append('avatar', file);
+        
+        const response = await fetch(`/api/avatar/upload/${currentUserId}`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!response.ok) {
+          throw new Error('上传失败');
+        }
+        
+        const result = await response.json();
+        if (result.success) {
+          // 更新头像显示
+          const avatarContainer = document.querySelector('.user-avatar');
+          let avatarImg = document.getElementById('current-avatar');
+          
+          // 如果不存在则创建新的img元素
+          if (!avatarImg) {
+              avatarImg = document.createElement('img');
+              avatarImg.id = 'current-avatar';
+              avatarContainer.innerHTML = ''; // 清空容器
+              avatarContainer.appendChild(avatarImg);
+          }
+          
+          // 设置图片属性
+          avatarImg.src = `/api/avatar/get/${currentUserId}`; // 添加时间戳避免缓存
+          avatarImg.alt = '我的头像';
+          avatarImg.style.width = '100%';
+          avatarImg.style.height = '100%';
+          avatarImg.style.objectFit = 'cover';
+          avatarImg.style.display = 'block';
+          
+          // 重新添加遮罩层
+          if (!avatarContainer.querySelector('.avatar-overlay')) {
+              const overlay = document.createElement('div');
+              overlay.className = 'avatar-overlay';
+              overlay.innerHTML = '<span>更换头像</span>';
+              avatarContainer.appendChild(overlay);
+          }
+          
+          showNotification('头像更新成功');
+          closeAvatarModal();
+        } else {
+          throw new Error(result.error || '上传失败');
+        }
+      } catch (error) {
+        console.error('Avatar upload failed:', error);
+        showNotification(error.message, 'error');
+      }
+    }
   </script>
+<!-- 图片裁剪模态框 -->
+<div id="avatarModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">裁剪头像</h3>
+      <button class="btn-close" onclick="closeAvatarModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="img-container">
+        <img id="cropperImage" src="" style="max-width: 100%; display: none;">
+      </div>
+      <div class="preview-container">
+        <div style="width: 100%; height: 100%; overflow: hidden;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeAvatarModal()">取消</button>
+      <button onclick="uploadCroppedAvatar()" class="btn-primary">确定</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>

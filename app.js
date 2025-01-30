@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-19 19:07:22
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-01-20 15:29:14
+ * @LastEditTime: 2025-01-25 22:05:26
  * @FilePath: /FireStudyRoom/app.js
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -20,6 +20,7 @@ const setupWebSocket = require('./ws');
 // 使用配置文件
 const config = require('./config/config');
 const apiRouter = require('./api');
+const avatarRouter = require('./routes/avatar');
 const crypto = require('crypto');
 
 // 生成随机cookie secret
@@ -31,6 +32,9 @@ app.use(cookieParser(cookieSecret));
 
 // 静态文件路由
 app.use('/web/public', express.static('public'));
+
+// 头像上传路由
+app.use('/api/avatar', avatarRouter);
 
 // 默认路由重定向
 app.get('/', (req, res) => {

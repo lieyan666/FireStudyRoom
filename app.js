@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-19 19:07:22
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-02-02 01:06:06
+ * @LastEditTime: 2025-02-02 01:22:11
  * @FilePath: /FireStudyRoom/app.js
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -140,7 +140,7 @@ async function startServer() {
       // 在生产环境下，如果 package.json 被更新，提示用户需要重新启动
       const git = require('simple-git')();
       const status = await git.status();
-      if (status.modified.includes('package-lock.json')) {
+      if (status.modified.includes('package.json')) {
         logger.warn('检测到依赖变更，请执行以下步骤：');
         logger.warn('1. 停止服务器');
         logger.warn('2. 执行 npm install');

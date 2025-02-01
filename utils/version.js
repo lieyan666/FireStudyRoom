@@ -2,13 +2,15 @@
  * @Author: Lieyan
  * @Date: 2025-01-22 23:10:05
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-02-02 00:02:20
+ * @LastEditTime: 2025-02-02 03:05:48
  * @FilePath: /FireStudyRoom/utils/version.js
  * @Description: 版本信息工具函数
  */
 const simpleGit = require('simple-git');
 const path = require('path');
 const fs = require('fs');
+const config = require('../config/config');
+const logger = require('./logger');
 
 /**
  * 获取项目版本信息
@@ -23,27 +25,53 @@ async function getVersionInfo() {
     let gitInfo = {};
     try {
       // 使用 simple-git 获取所有 git 信息
+      // 获取本地信息
       const [
         branch,
         hash,
         status,
-        log
+        log,
+        remote
       ] = await Promise.all([
         git.revparse(['--abbrev-ref', 'HEAD']),
         git.revparse(['HEAD']),
         git.status(),
-        git.log(['-1', '--pretty=format:%B%n%an%n%ad', '--date=iso'])
+        git.log(['--max-count=1']),
+        git.listRemote(['--heads'])
       ]);
+
+      // 获取远程最新提交
+      const remoteHash = remote.split('\n')
+        .find(line => line.endsWith(`refs/heads/${branch.trim()}`))
+        ?.split('\t')[0] || '';
+
+      // 获取远程最新提交信息
+      let remoteLog = null;
+      if (remoteHash) {
+        try {
+          remoteLog = await git.log([`${remoteHash}`, '--max-count=1']);
+        } catch (error) {
+          logger.warn('无法获取远程提交信息:', error.message);
+        }
+      }
 
       gitInfo = {
         branch: branch.trim(),
         commit: {
           hash: hash.trim(),
           shortHash: hash.trim().substring(0, 7),
-          message: log.latest.message,
-          author: log.latest.author_name,
-          date: log.latest.date
+          message: log.latest ? log.latest.message : '',
+          author: log.latest ? log.latest.author_name : '',
+          date: log.latest ? log.latest.date : ''
         },
+        remote: remoteHash ? {
+          hash: remoteHash,
+          shortHash: remoteHash.substring(0, 7),
+          message: remoteLog?.latest?.message || '',
+          author: remoteLog?.latest?.author_name || '',
+          date: remoteLog?.latest?.date || '',
+          behindBy: await git.raw(['rev-list', '--count', `${hash.trim()}..${remoteHash}`]).catch(() => '0')
+        } : null,
         isDirty: status.modified.length > 0 || status.not_added.length > 0
       };
     } catch (error) {
@@ -63,7 +91,11 @@ async function getVersionInfo() {
       buildTime: new Date().toISOString(),
       nodeVersion: process.version,
       platform: process.platform,
-      arch: process.arch
+      arch: process.arch,
+      serverInfo: {
+        environment: process.env.NODE_ENV || 'development',
+        autoUpdate: process.env.NODE_ENV === 'production' && config.app.autoUpdate || false
+      }
     };
   } catch (error) {
     console.error('获取版本信息失败:', error);

@@ -622,55 +622,124 @@
       border-left: 4px solid var(--success-color);
     }
 
-    .version-grid {
-      display: grid;
-      gap: var(--spacing-xs);
-      padding: var(--spacing-xs);
-      background: var(--background-color);
-      border-radius: var(--border-radius-sm);
+    .version-info-container {
+      background: var(--surface-color);
+      border-radius: var(--border-radius-md);
+      padding: var(--spacing-md);
+      margin-bottom: var(--spacing-md);
     }
 
-    .version-item {
+    .version-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-md);
+      padding-bottom: var(--spacing-sm);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .version-main {
+      display: flex;
+      gap: var(--spacing-sm);
+      align-items: center;
+    }
+
+    .version-number {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: var(--primary-color);
+      font-family: var(--font-mono, monospace);
+    }
+
+    .version-badges {
+      display: flex;
+      gap: var(--spacing-xs);
+    }
+
+    .badge {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75em;
+      font-weight: 500;
+    }
+
+    .version-branch {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xs);
+      color: var(--text-secondary);
+      font-size: 0.875em;
+      font-family: var(--font-mono, monospace);
+    }
+
+    .version-details {
+      background: var(--background-color);
+      border-radius: var(--border-radius-sm);
+      padding: var(--spacing-sm);
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      color: var(--text-secondary);
+      font-size: 0.875em;
+    }
+
+    .commit-info {
       display: flex;
       align-items: center;
       gap: var(--spacing-sm);
-      font-size: 0.875rem;
     }
 
-    .version-label {
+    .hash {
+      color: var(--primary-color);
+      font-family: var(--font-mono, monospace);
+      font-size: 0.875em;
+    }
+
+    .date {
       color: var(--text-secondary);
-      min-width: 70px;
+      font-size: 0.8em;
     }
 
-    .version-value {
-      color: var(--text-primary);
-      font-family: monospace;
+    .author {
+      color: var(--text-secondary);
+      font-size: 0.85em;
+      font-style: italic;
     }
 
-    .git-info {
-      border-top: 1px solid var(--border-color);
-      padding-top: var(--spacing-xs);
-      margin-top: var(--spacing-xs);
+    .message {
+      word-wrap: break-word;
+      max-width: 500px;
+      font-size: 0.785em;
     }
 
-    .git-details {
+    .status-row {
+      margin-top: var(--spacing-sm);
       display: flex;
-      flex-wrap: wrap;
-      gap: var(--spacing-xs) var(--spacing-sm);
-      align-items: center;
+      justify-content: flex-end;
+      gap: var(--spacing-sm);
     }
 
-    .git-details span {
+    .status-badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      color: var(--text-primary);
-      font-family: monospace;
-      font-size: 0.8125rem;
-    }
-
-    .git-details svg {
-      color: var(--text-secondary);
+      justify-content: center;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75em;
+      line-height: 1.5;
+      white-space: nowrap;
     }
 
     /* 图片裁剪模态框样式 */
@@ -798,17 +867,17 @@
           <div class="chat-header">
             <div class="user-avatar-container">
               <div class="user-avatar" onclick="document.getElementById('avatar-upload').click()">
-               <img id="current-avatar" src=""
-                   onerror="this.style.display='none'; this.parentElement.style.backgroundColor=generateUserColor(currentUserName); this.parentElement.innerHTML=generateAvatar(currentUserName)"
-                   alt="我的头像"
-                   style="width: 100%; height: 100%; object-fit: cover;">
-               <div class="avatar-overlay">
-                 <span>更换头像</span>
-               </div>
-             </div>
-             <input type="file" id="avatar-upload" accept="image/*" style="display: none" onchange="uploadAvatar(event)">
-           </div>
-           <div class="user-name" id="current-user-name"></div>
+                <img id="current-avatar" src=""
+                  onerror="this.style.display='none'; this.parentElement.style.backgroundColor=generateUserColor(currentUserName); this.parentElement.innerHTML=generateAvatar(currentUserName)"
+                  alt="我的头像" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="avatar-overlay">
+                  <span>更换头像</span>
+                </div>
+              </div>
+              <input type="file" id="avatar-upload" accept="image/*" style="display: none"
+                onchange="uploadAvatar(event)">
+            </div>
+            <div class="user-name" id="current-user-name"></div>
           </div>
           <div class="chat-messages" id="chat-messages"></div>
           <div class="chat-input-container">
@@ -827,34 +896,71 @@
             <div class="server-info version-info">
               <h3 style="display: flex; align-items: center; gap: var(--spacing-sm);">
                 版本信息
-                <button onclick="checkUpdate()" style="padding: 4px; min-width: auto; background: none; color: var(--text-primary);" title="检查更新" id="update-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+                <button onclick="checkUpdate()"
+                  style="padding: 4px; min-width: auto; background: none; color: var(--text-primary);" title="检查更新"
+                  id="update-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3" />
                   </svg>
                 </button>
               </h3>
-              <div class="version-grid">
-                <div class="version-item">
-                  <span class="version-label">当前版本</span>
-                  <span id="current-version" class="version-value">获取中...</span>
+              <div class="version-info-container">
+                <div class="version-header">
+                  <div class="version-main">
+                    <span class="version-number">v<span id="current-version">获取中...</span></span>
+                    <div class="version-badges">
+                      <span id="server-environment" class="badge"></span>
+                      <span id="auto-update-status" class="badge"></span>
+                    </div>
+                  </div>
+                  <div class="version-branch">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M6 3v12" />
+                      <circle cx="6" cy="18" r="3" />
+                      <circle cx="6" cy="6" r="3" />
+                      <path d="M18 9c3 0 3-4 3-4s0-4-3-4-3 4-3 4 0 4 3 4z" />
+                    </svg>
+                    <span id="git-branch">获取中...</span>
+                  </div>
                 </div>
-                <div class="version-item git-info">
-                  <span class="version-label">Git信息</span>
-                  <div class="git-details">
-                    <span class="git-branch" title="分支"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v12"/><circle cx="6" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M18 9c3 0 3-4 3-4s0-4-3-4-3 4-3 4 0 4 3 4z"/></svg><span id="git-branch">获取中...</span></span>
-                    <span class="git-commit" title="提交"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M1.05 12H7"/><path d="M17.01 12h5.95"/></svg><span id="git-commit">获取中...</span></span>
-                    <span class="git-date" title="提交时间"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><span id="git-date">获取中...</span></span>
-                    <span class="git-status" title="状态"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 16v.01"/><path d="M12 8v4"/></svg><span id="git-status">获取中...</span></span>
+                <div class="version-details">
+                  <div class="detail-row">
+                    <span class="detail-label">本地</span>
+                    <span class="commit-info">
+                      <span id="git-commit" class="hash" title="提交哈希">获取中...</span>
+                      <span id="git-date" class="date" title="提交时间">获取中...</span>
+                      <span id="git-author" class="author" title="作者">获取中...</span>
+                      <span id="git-message" class="message" title="提交信息">获取中...</span>
+                    </span>
+                  </div>
+                  <div class="detail-row">
+                    <span class="detail-label">远程</span>
+                    <span class="commit-info">
+                      <span id="git-remote-commit" class="hash" title="远程提交哈希">获取中...</span>
+                      <span id="git-remote-date" class="date" title="远程提交时间">获取中...</span>
+                      <span id="git-remote-author" class="author" title="远程作者">获取中...</span>
+                      <span id="git-remote-message" class="message" title="远程提交信息">获取中...</span>
+                    </span>
+                  </div>
+                  <div class="status-row">
+                    <span id="git-behind" class="status-badge"></span>
+                    <span id="git-status" class="status-badge"></span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="user-selection" style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-            <label for="other-user-select">选择用户:</label>
-            <select id="other-user-select" onchange="changeSelectedUser(this.value)" style="padding: 8px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: var(--surface-color); color: var(--text-primary); flex: 1;">
-              <option value="">所有用户</option>
-            </select>
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px;">
+            <div class="user-selection" style="display: flex; align-items: center; gap: 10px; max-width: 500px;">
+              <label for="other-user-select">选择对面:</label>
+              <select id="other-user-select" onchange="changeSelectedUser(this.value)"
+                style="padding: 10px; border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background: var(--surface-color); color: var(--text-primary); width: 200px;">
+                <option value="">所有用户</option>
+              </select>
+            </div>
+            <button onclick="logout()" style="background: var(--danger-color);">退出登录</button>
           </div>
           <div class="server-selection">
             <label for="ws-server">WebSocket服务器:</label>
@@ -957,74 +1063,74 @@
 
     // 上传头像
     async function uploadAvatar(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        
-        // 验证文件类型和大小
-        if (!file.type.startsWith('image/')) {
-            showNotification('请选择图片文件', 'error');
-            return;
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // 验证文件类型和大小
+      if (!file.type.startsWith('image/')) {
+        showNotification('请选择图片文件', 'error');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('图片大小不能超过5MB', 'error');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      try {
+        const response = await fetch(`/api/avatar/upload/${currentUserId}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('上传失败');
         }
-        
-        if (file.size > 5 * 1024 * 1024) {
-            showNotification('图片大小不能超过5MB', 'error');
-            return;
+
+        const result = await response.json();
+        if (result.success) {
+          // 更新用户头像
+          currentUserAvatar = result.filename;
+          localStorage.setItem('userAvatar', result.filename);
+
+          // 获取或创建头像图片元素
+          const avatarContainer = document.querySelector('.user-avatar');
+          let avatarImg = document.getElementById('current-avatar');
+
+          // 如果不存在则创建新的img元素
+          if (!avatarImg) {
+            avatarImg = document.createElement('img');
+            avatarImg.id = 'current-avatar';
+            avatarContainer.innerHTML = ''; // 清空容器
+            avatarContainer.appendChild(avatarImg);
+          }
+
+          // 设置图片属性
+          avatarImg.src = `${result.path}?t=${Date.now()}`; // 添加时间戳避免缓存
+          avatarImg.alt = '我的头像';
+          avatarImg.style.width = '100%';
+          avatarImg.style.height = '100%';
+          avatarImg.style.objectFit = 'cover';
+
+          // 添加遮罩层
+          const overlay = document.createElement('div');
+          overlay.className = 'avatar-overlay';
+          overlay.innerHTML = '<span>更换头像</span>';
+          avatarContainer.appendChild(overlay);
+
+          showNotification('头像更新成功');
+        } else {
+          throw new Error(result.error || '上传失败');
         }
-        
-        const formData = new FormData();
-        formData.append('avatar', file);
-        
-        try {
-            const response = await fetch(`/api/avatar/upload/${currentUserId}`, {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (!response.ok) {
-                throw new Error('上传失败');
-            }
-            
-            const result = await response.json();
-            if (result.success) {
-                // 更新用户头像
-                currentUserAvatar = result.filename;
-                localStorage.setItem('userAvatar', result.filename);
-                
-                // 获取或创建头像图片元素
-                const avatarContainer = document.querySelector('.user-avatar');
-                let avatarImg = document.getElementById('current-avatar');
-                
-                // 如果不存在则创建新的img元素
-                if (!avatarImg) {
-                    avatarImg = document.createElement('img');
-                    avatarImg.id = 'current-avatar';
-                    avatarContainer.innerHTML = ''; // 清空容器
-                    avatarContainer.appendChild(avatarImg);
-                }
-                
-                // 设置图片属性
-                avatarImg.src = `${result.path}?t=${Date.now()}`; // 添加时间戳避免缓存
-                avatarImg.alt = '我的头像';
-                avatarImg.style.width = '100%';
-                avatarImg.style.height = '100%';
-                avatarImg.style.objectFit = 'cover';
-                
-                // 添加遮罩层
-                const overlay = document.createElement('div');
-                overlay.className = 'avatar-overlay';
-                overlay.innerHTML = '<span>更换头像</span>';
-                avatarContainer.appendChild(overlay);
-                
-                showNotification('头像更新成功');
-            } else {
-                throw new Error(result.error || '上传失败');
-            }
-        } catch (error) {
-            console.error('Avatar upload failed:', error);
-            showNotification(error.message, 'error');
-        }
+      } catch (error) {
+        console.error('Avatar upload failed:', error);
+        showNotification(error.message, 'error');
+      }
     }
-    
+
     let otherUserTodos = [];
     let otherUserStudyPlans = [];
     let reconnectAttempts = 0;
@@ -1465,9 +1571,18 @@
     async function checkUpdate() {
       const button = document.getElementById('update-btn');
       const currentVersionSpan = document.getElementById('current-version');
+      const serverEnvSpan = document.getElementById('server-environment');
+      const autoUpdateSpan = document.getElementById('auto-update-status');
       const gitBranchSpan = document.getElementById('git-branch');
       const gitCommitSpan = document.getElementById('git-commit');
+      const gitAuthorSpan = document.getElementById('git-author');
+      const gitMessageSpan = document.getElementById('git-message');
       const gitDateSpan = document.getElementById('git-date');
+      const gitRemoteCommitSpan = document.getElementById('git-remote-commit');
+      const gitRemoteAuthorSpan = document.getElementById('git-remote-author');
+      const gitRemoteMessageSpan = document.getElementById('git-remote-message');
+      const gitRemoteDateSpan = document.getElementById('git-remote-date');
+      const gitBehindSpan = document.getElementById('git-behind');
       const gitStatusSpan = document.getElementById('git-status');
 
       // 设置按钮加载状态
@@ -1479,22 +1594,106 @@
         if (!response.ok) throw new Error('获取版本信息失败');
         const data = await response.json();
 
-        // 更新版本信息显示
+        // 更新版本和环境信息
         currentVersionSpan.textContent = data.version || '未知';
+
+        // 设置环境标签
+        serverEnvSpan.className = 'badge';
+        if (data.serverInfo?.environment === 'production') {
+          serverEnvSpan.textContent = '生产环境';
+          serverEnvSpan.style.backgroundColor = 'var(--success-color)';
+          serverEnvSpan.style.color = 'white';
+        } else {
+          serverEnvSpan.textContent = '开发环境';
+          serverEnvSpan.style.backgroundColor = 'var(--warning-color)';
+          serverEnvSpan.style.color = 'white';
+        }
+
+        // 设置自动更新状态
+        autoUpdateSpan.className = 'badge';
+        if (data.serverInfo?.autoUpdate) {
+          autoUpdateSpan.textContent = '自动更新';
+          autoUpdateSpan.style.backgroundColor = 'var(--primary-color)';
+          autoUpdateSpan.style.color = 'white';
+        } else {
+          autoUpdateSpan.textContent = '手动更新';
+          autoUpdateSpan.style.backgroundColor = 'var(--text-secondary)';
+          autoUpdateSpan.style.color = 'white';
+          autoUpdateSpan.style.opacity = '0.7';
+        }
 
         // 更新Git信息
         if (data.git && !data.git.error) {
+          // Git信息
           gitBranchSpan.textContent = data.git.branch || '未知';
+
+          // 本地提交信息
           gitCommitSpan.textContent = data.git.commit.shortHash || '未知';
-          gitDateSpan.textContent = new Date(data.git.commit.date).toLocaleString() || '未知';
-          gitStatusSpan.innerHTML = data.git.isDirty ? 
-            '<span style="color: var(--error-color)">有未提交的更改</span>' : 
-            '<span style="color: var(--success-color)">代码库干净</span>';
+          gitDateSpan.textContent = new Date(data.git.commit.date).toLocaleString('zh-CN', {
+            month: 'numeric',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }) || '未知';
+          gitAuthorSpan.textContent = data.git.commit.author || '未知';
+          gitMessageSpan.textContent = data.git.commit.message || '未知';
+
+          // 远程仓库信息
+          if (data.git.remote) {
+            gitRemoteCommitSpan.textContent = data.git.remote.shortHash || '未知';
+            gitRemoteDateSpan.textContent = new Date(data.git.remote.date).toLocaleString('zh-CN', {
+              month: 'numeric',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            }) || '未知';
+            gitRemoteAuthorSpan.textContent = data.git.remote.author || '未知';
+            gitRemoteMessageSpan.textContent = data.git.remote.message || '未知';
+
+            const behindCount = parseInt(data.git.remote.behindBy);
+            gitBehindSpan.className = 'status-badge';
+            if (behindCount > 0) {
+              gitBehindSpan.textContent = `落后 ${behindCount} 个提交`;
+              gitBehindSpan.style.backgroundColor = 'var(--warning-color)';
+              gitBehindSpan.style.color = 'white';
+            } else {
+              gitBehindSpan.textContent = '已是最新版本';
+              gitBehindSpan.style.backgroundColor = 'var(--success-color)';
+              gitBehindSpan.style.color = 'white';
+            }
+          } else {
+            gitRemoteCommitSpan.textContent = '未知';
+            gitRemoteDateSpan.textContent = '未知';
+            gitBehindSpan.textContent = '无法对比更新';
+            gitBehindSpan.style.backgroundColor = 'var(--text-secondary)';
+            gitBehindSpan.style.opacity = '0.7';
+          }
+
+          // 代码状态
+          gitStatusSpan.className = 'status-badge';
+          if (data.git.isDirty) {
+            gitStatusSpan.textContent = '有未提交的更改';
+            gitStatusSpan.style.backgroundColor = 'var(--danger-color)';
+            gitStatusSpan.style.color = 'white';
+          } else {
+            gitStatusSpan.textContent = '代码库干净';
+            gitStatusSpan.style.backgroundColor = 'var(--success-color)';
+            gitStatusSpan.style.color = 'white';
+          }
         } else {
+          // Git信息获取失败的处理
+          const errorMsg = data.git?.error || '无法获取Git信息';
           gitBranchSpan.textContent = '未知';
           gitCommitSpan.textContent = '未知';
+          gitAuthorSpan.textContent = '未知';
+          gitMessageSpan.textContent = '未知';
           gitDateSpan.textContent = '未知';
-          gitStatusSpan.innerHTML = '<span style="color: var(--error-color)">' + (data.git?.error || '无法获取Git信息') + '</span>';
+          gitRemoteCommitSpan.textContent = '未知';
+          gitRemoteAuthorSpan.textContent = '未知';
+          gitRemoteMessageSpan.textContent = '未知';
+          gitRemoteDateSpan.textContent = '未知';
+          gitBehindSpan.textContent = '未知';
+          gitStatusSpan.innerHTML = `<span style="color: var(--error-color)">${errorMsg}</span>`;
         }
       } catch (error) {
         console.error('检查更新失败:', error);
@@ -1814,16 +2013,16 @@
       const modal = document.getElementById('avatarModal');
       const image = document.getElementById('cropperImage');
       image.style.display = 'block';
-      
+
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function (e) {
         image.src = e.target.result;
-        
+
         // 销毁之前的cropper实例
         if (cropper) {
           cropper.destroy();
         }
-        
+
         // 初始化cropper
         cropper = new Cropper(image, {
           aspectRatio: 1,
@@ -1842,7 +2041,7 @@
         });
       };
       reader.readAsDataURL(file);
-      
+
       modal.classList.add('show');
     }
 
@@ -1857,15 +2056,15 @@
     }
 
     // 拦截文件选择，显示裁剪界面
-    document.getElementById('avatar-upload').onchange = function(e) {
+    document.getElementById('avatar-upload').onchange = function (e) {
       const file = e.target.files[0];
       if (!file) return;
-      
+
       if (!file.type.startsWith('image/')) {
         showNotification('请选择图片文件', 'error');
         return;
       }
-      
+
       if (file.size > 5 * 1024 * 1024) {
         showNotification('图片大小不能超过5MB', 'error');
         return;
@@ -1877,44 +2076,44 @@
     // 上传裁剪后的头像
     async function uploadCroppedAvatar() {
       if (!cropper) return;
-      
+
       try {
         // 获取裁剪后的图片blob
         const canvas = cropper.getCroppedCanvas({
           width: 200,
           height: 200
         });
-        
+
         // 转换为file对象
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
         const file = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
-        
+
         const formData = new FormData();
         formData.append('avatar', file);
-        
+
         const response = await fetch(`/api/avatar/upload/${currentUserId}`, {
           method: 'POST',
           body: formData
         });
-        
+
         if (!response.ok) {
           throw new Error('上传失败');
         }
-        
+
         const result = await response.json();
         if (result.success) {
           // 更新头像显示
           const avatarContainer = document.querySelector('.user-avatar');
           let avatarImg = document.getElementById('current-avatar');
-          
+
           // 如果不存在则创建新的img元素
           if (!avatarImg) {
-              avatarImg = document.createElement('img');
-              avatarImg.id = 'current-avatar';
-              avatarContainer.innerHTML = ''; // 清空容器
-              avatarContainer.appendChild(avatarImg);
+            avatarImg = document.createElement('img');
+            avatarImg.id = 'current-avatar';
+            avatarContainer.innerHTML = ''; // 清空容器
+            avatarContainer.appendChild(avatarImg);
           }
-          
+
           // 设置图片属性
           avatarImg.src = `/api/avatar/get/${currentUserId}`; // 添加时间戳避免缓存
           avatarImg.alt = '我的头像';
@@ -1922,15 +2121,15 @@
           avatarImg.style.height = '100%';
           avatarImg.style.objectFit = 'cover';
           avatarImg.style.display = 'block';
-          
+
           // 重新添加遮罩层
           if (!avatarContainer.querySelector('.avatar-overlay')) {
-              const overlay = document.createElement('div');
-              overlay.className = 'avatar-overlay';
-              overlay.innerHTML = '<span>更换头像</span>';
-              avatarContainer.appendChild(overlay);
+            const overlay = document.createElement('div');
+            overlay.className = 'avatar-overlay';
+            overlay.innerHTML = '<span>更换头像</span>';
+            avatarContainer.appendChild(overlay);
           }
-          
+
           showNotification('头像更新成功');
           closeAvatarModal();
         } else {
@@ -1941,25 +2140,41 @@
         showNotification(error.message, 'error');
       }
     }
+
+    // 退出登录
+    function logout() {
+      // 清除本地存储的用户信息
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userName');
+      localStorage.removeItem('userAvatar');
+
+      // 关闭WebSocket连接
+      if (ws) {
+        ws.close();
+      }
+
+      // 跳转到登录页面
+      window.location.href = '/web/login';
+    }
   </script>
-<!-- 图片裁剪模态框 -->
-<div id="avatarModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">裁剪头像</h3>
-      <button class="btn-close" onclick="closeAvatarModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="img-container">
-        <img id="cropperImage" src="" style="max-width: 100%; display: none;">
+  <!-- 图片裁剪模态框 -->
+  <div id="avatarModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">裁剪头像</h3>
+        <button class="btn-close" onclick="closeAvatarModal()">&times;</button>
       </div>
-      <div class="preview-container">
-        <div style="width: 100%; height: 100%; overflow: hidden;"></div>
+      <div class="modal-body">
+        <div class="img-container">
+          <img id="cropperImage" src="" style="max-width: 100%; display: none;">
+        </div>
+        <div class="preview-container">
+          <div style="width: 100%; height: 100%; overflow: hidden;"></div>
+        </div>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button onclick="closeAvatarModal()">取消</button>
-      <button onclick="uploadCroppedAvatar()" class="btn-primary">确定</button>
+      <div class="modal-footer">
+        <button onclick="closeAvatarModal()">取消</button>
+        <button onclick="uploadCroppedAvatar()" class="btn-primary">确定</button>
       </div>
     </div>
   </div>

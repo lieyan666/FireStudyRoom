@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-25 23:18:13
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-01-31 01:23:40
+ * @LastEditTime: 2025-02-02 02:12:13
  * @FilePath: /FireStudyRoom/routes/avatar.js
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -130,10 +130,17 @@ router.post('/upload/:userId', upload.single('avatar'), async (req, res) => {
 router.get('/get/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
-        const config = require('../config/config');
-        
-        // 从配置中获取用户信息
-        const user = config.users.find(user => user.id === userId);
+        const usersPath = path.join(__dirname, '../config/users.json');
+        let user;
+        try {
+            const usersContent = await fs.readFile(usersPath, 'utf8');
+            const usersData = JSON.parse(usersContent);
+            user = usersData.users.find(u => u.id === userId);
+        } catch (error) {
+            logger.error('读取用户配置文件失败:', error);
+            return res.status(500).json({ error: '服务器内部错误' });
+        }
+
         if (!user || !user.avatar) {
             return res.status(404).json({ error: '头像不存在' });
         }

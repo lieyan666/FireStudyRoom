@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-19 20:47:40
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-01-25 22:43:30
+ * @LastEditTime: 2025-02-02 02:14:16
  * @FilePath: /FireStudyRoom/api.js
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -101,9 +101,9 @@ apiRouter.post('/login', rateLimiter, (req, res) => {
     logger.info(`Successful login from IP: ${ip}`);
 
 // 获取版本信息路由
-apiRouter.get('/version', (req, res) => {
+apiRouter.get('/version', async (req, res) => {
   try {
-    const versionInfo = getVersionInfo();
+    const versionInfo = await getVersionInfo();
     res.json(versionInfo);
     logger.info('Version info requested');
   } catch (error) {

@@ -1,6 +1,6 @@
 {
   "name": "firestudyroom",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "双人线上自习室",
   "main": "app.js",
   "scripts": {

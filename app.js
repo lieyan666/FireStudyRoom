@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-19 19:07:22
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-02-01 23:57:09
+ * @LastEditTime: 2025-02-02 01:04:15
  * @FilePath: /FireStudyRoom/app.js
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -134,7 +134,20 @@ const PORT = config.app.port || 3000;
 // 异步启动服务器
 async function startServer() {
   try {
-    await initializeServer();
+    if (process.env.NODE_ENV === 'production' && config.app.autoUpdate) {
+      await initializeServer();
+      
+      // 在生产环境下，如果 package.json 被更新，提示用户需要重新启动
+      const git = require('simple-git')();
+      const status = await git.status();
+      if (status.modified.includes('package-lock.json')) {
+        logger.warn('检测到依赖变更，请执行以下步骤：');
+        logger.warn('1. 停止服务器');
+        logger.warn('2. 执行 npm install');
+        logger.warn('3. 重新启动服务器');
+        process.exit(0);
+      }
+    }
     
     const server = app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);

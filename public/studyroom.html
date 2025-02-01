@@ -86,6 +86,14 @@
       border-radius: var(--border-radius-md);
     }
 
+    .todo-container {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 8px;
+      background: var(--surface-color);
+      border-radius: var(--border-radius-md);
+    }
+
     #new-todo {
       flex: 1;
       padding: 8px;
@@ -1383,6 +1391,7 @@
       const newProgress = Math.min(100, Math.max(0, plan.progress + change));
       sendMessage('UPDATE_STUDY_PROGRESS', {
         id: planId,
+        userId: currentUserId,
         progress: newProgress
       });
     }

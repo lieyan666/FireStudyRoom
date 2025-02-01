@@ -75,6 +75,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* 头像相关样式 */
@@ -383,10 +385,53 @@ button.loading::after {
 }
 
 /* 待办事项样式 */
+/* 新增全局滚动容器 */
+.scroll-wrapper {
+  flex: 1;
+  width: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
 .todo-container {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  max-height: calc(100vh - 200px); /* 动态计算高度 */
+  padding-right: 8px;
+  margin: 0 auto;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  .scroll-wrapper {
+    overscroll-behavior-y: contain;
+  }
+  
+  .todo-container {
+    max-height: calc(100vh - 160px);
+    padding-right: 4px;
+  }
+}
+
+/* 自定义滚动条样式 */
+.todo-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.todo-container::-webkit-scrollbar-track {
+  background: var(--background-color);
+  border-radius: var(--border-radius-full);
+}
+
+.todo-container::-webkit-scrollbar-thumb {
+  background: var(--primary-light);
+  border-radius: var(--border-radius-full);
+}
+
+.todo-container::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
 }
 
 .todo-form {

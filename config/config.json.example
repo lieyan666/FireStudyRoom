@@ -1,0 +1,31 @@
+{
+  "app": {
+    // 应用程序运行端口
+    "port": 3000,
+    // 运行环境：development 或 production
+    "env": "development", // 由NodeENV覆盖
+    // 是否在生产环境下自动更新代码
+    "autoUpdate": true
+  },
+  "security": {
+    // 认证密钥
+    "authKey": "your-auth-key-here",
+    // token过期时间
+    "tokenExpiration": "24h"
+  },
+  "users": [
+    // 预设用户列表示例
+    {
+      "id": "example-user1",
+      "name": "示例用户1"
+    }
+  ],
+  "wsServers": [
+    // WebSocket服务器配置示例
+    {
+      "id": "server1",
+      "name": "服务器名称",
+      "url": "ws://your-server-url:port/ws"
+    }
+  ]
+}

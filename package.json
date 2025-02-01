@@ -1,10 +1,12 @@
 {
   "name": "firestudyroom",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "双人线上自习室",
   "main": "app.js",
   "scripts": {
-    "test": "-t"
+    "test": "-t",
+    "start": "NODE_ENV=production node app.js",
+    "dev": "NODE_ENV=development node app.js"
   },
   "repository": {
     "type": "git",
@@ -22,10 +24,15 @@
   "homepage": "https://github.com/lieyan666/FireStudyRoom#readme",
   "dependencies": {
     "body-parser": "^1.20.3",
+    "clean-css": "^5.3.3",
+    "compression": "^1.7.5",
     "cookie-parser": "^1.4.7",
     "express": "^4.21.2",
+    "html-minifier-terser": "^7.2.0",
     "multer": "^1.4.5-lts.1",
     "sharp": "^0.33.5",
+    "simple-git": "^3.27.0",
+    "terser": "^5.37.0",
     "uuid": "^11.0.5",
     "winston": "^3.17.0",
     "ws": "^8.18.0"

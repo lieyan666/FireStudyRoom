@@ -2,35 +2,49 @@
  * @Author: Lieyan
  * @Date: 2025-01-22 23:10:05
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-01-22 23:10:05
+ * @LastEditTime: 2025-02-02 00:02:20
  * @FilePath: /FireStudyRoom/utils/version.js
  * @Description: 版本信息工具函数
  */
-const { execSync } = require('child_process');
+const simpleGit = require('simple-git');
 const path = require('path');
 const fs = require('fs');
 
 /**
  * 获取项目版本信息
- * @returns {Object} 版本信息对象
+ * @returns {Promise<Object>} 版本信息对象
  */
-function getVersionInfo() {
+async function getVersionInfo() {
   try {
     const packageJsonPath = path.join(__dirname, '..', 'package.json');
     const packageInfo = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    const git = simpleGit();
 
     let gitInfo = {};
     try {
+      // 使用 simple-git 获取所有 git 信息
+      const [
+        branch,
+        hash,
+        status,
+        log
+      ] = await Promise.all([
+        git.revparse(['--abbrev-ref', 'HEAD']),
+        git.revparse(['HEAD']),
+        git.status(),
+        git.log(['-1', '--pretty=format:%B%n%an%n%ad', '--date=iso'])
+      ]);
+
       gitInfo = {
-        branch: execSync('git rev-parse --abbrev-ref HEAD').toString().trim(),
+        branch: branch.trim(),
         commit: {
-          hash: execSync('git rev-parse HEAD').toString().trim(),
-          shortHash: execSync('git rev-parse --short HEAD').toString().trim(),
-          message: execSync('git log -1 --pretty=%B').toString().trim(),
-          author: execSync('git log -1 --pretty=%an').toString().trim(),
-          date: execSync('git log -1 --pretty=%ad --date=iso').toString().trim()
+          hash: hash.trim(),
+          shortHash: hash.trim().substring(0, 7),
+          message: log.latest.message,
+          author: log.latest.author_name,
+          date: log.latest.date
         },
-        isDirty: execSync('git status --porcelain').toString().length > 0
+        isDirty: status.modified.length > 0 || status.not_added.length > 0
       };
     } catch (error) {
       gitInfo = {

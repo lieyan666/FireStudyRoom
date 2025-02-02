@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-19 20:53:54
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-01-22 23:05:41
+ * @LastEditTime: 2025-02-02 21:50:02
  * @FilePath: /FireStudyRoom/ws.js
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -159,11 +159,32 @@ module.exports = (server) => {
                 todos.push(data[data.length - 1]); // Add the new todo
                 break;
               case 'UPDATE_TODO':
-              case 'DELETE_TODO':
                 // Replace all todos for the current user
-                const otherTodos = todos.filter(todo => todo.userId !== data[0]?.userId);
+                const otherTodosForUpdate = todos.filter(todo => todo.userId !== data[0]?.userId);
                 todos.length = 0;
-                todos.push(...otherTodos, ...data);
+                todos.push(...otherTodosForUpdate, ...data);
+                break;
+              case 'DELETE_TODO':
+                // Keep all todos except the deleted one
+                const todoToDelete = data.id;
+                const userIdToDelete = data.userId;
+                
+                // Only allow deletion if the user owns the todo
+                const filteredTodos = todos.filter(todo =>
+                  !(todo.id === todoToDelete && todo.userId === userIdToDelete)
+                );
+                
+                if (filteredTodos.length === todos.length) {
+                  logger.warn(`Failed to delete todo: todo not found or unauthorized`);
+                  ws.send(JSON.stringify({
+                    type: 'ERROR',
+                    error: '无权删除该待办事项'
+                  }));
+                  return;
+                }
+                
+                todos.length = 0;
+                todos.push(...filteredTodos);
                 break;
             }
             await saveData(todoFilePath, todos);

@@ -20,6 +20,7 @@
   --border-color: #e2e8f0;
 
   /* 间距 */
+  --spacing-xxs: 0.25rem;
   --spacing-xs: 0.5rem;
   --spacing-sm: 0.75rem;
   --spacing-md: 1rem;
@@ -397,7 +398,7 @@ button.loading::after {
 .todo-container {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   max-height: calc(100vh - 200px); /* 动态计算高度 */
   padding-right: 8px;
   margin: 0 auto;
@@ -436,15 +437,33 @@ button.loading::after {
 
 .todo-form {
   display: flex;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.todo-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 4px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.todo-actions {
+  margin-top: 4px;
+  display: flex;
+  gap: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-color);
+  justify-content: flex-end;
 }
 
 .todo-item {
   background: var(--surface-color);
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-xs) var(--spacing-sm);
   transition: all var(--transition-normal);
 }
 
@@ -469,9 +488,26 @@ button.loading::after {
   flex-direction: column;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
-  background: var(--background-color);
+  background: var(--surface-color);
   padding: var(--spacing-lg);
   border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+}
+
+.study-plan-form input {
+  padding: var(--spacing-md);
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  font-size: 0.95rem;
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+
+.study-plan-form input::placeholder {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
 .study-plan {
@@ -481,6 +517,19 @@ button.loading::after {
   padding: var(--spacing-lg);
   margin-bottom: var(--spacing-md);
   transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.study-plan::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--primary-color);
+  border-radius: var(--border-radius-sm) 0 0 var(--border-radius-sm);
 }
 
 .study-plan:hover {
@@ -523,6 +572,61 @@ button.loading::after {
 
 .btn-delete:hover {
   background-color: var(--danger-dark);
+}
+
+.plan-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.plan-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: var(--spacing-sm) 0;
+  background: var(--background-color);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+}
+
+.plan-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.plan-actions button {
+  font-size: 0.85rem;
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  min-width: 60px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  transition: all var(--transition-fast);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-progress {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.btn-progress:hover {
+  background-color: var(--success-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 /* 空状态样式 */

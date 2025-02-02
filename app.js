@@ -2,7 +2,7 @@
  * @Author: Lieyan
  * @Date: 2025-01-19 19:07:22
  * @LastEditors: Lieyan
- * @LastEditTime: 2025-02-02 01:22:11
+ * @LastEditTime: 2025-02-02 22:49:50
  * @FilePath: /FireStudyRoom/app.js
  * @Description: 
  * @Contact: QQ: 2102177341  Website: lieyan.space  Github: @lieyan666
@@ -103,6 +103,12 @@ app.get('/web/login', (req, res) => {
     return res.redirect('/web/studyroom');
   }
   sendHtmlFile(res, 'public/login.html');
+});
+
+app.get('/web/logout', (req, res) => {
+  logger.info(`User logged out from IP: ${req.ip}`);
+  res.clearCookie('authenticated');
+  res.redirect('/web/login');
 });
 
 // 挂载API路由

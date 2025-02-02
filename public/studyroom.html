@@ -136,13 +136,14 @@
     }
 
     .todo-item {
-      padding: var(--spacing-md);
+      padding: var(--spacing-xs) var(--spacing-sm);
       border: 1px solid var(--border-color);
       border-radius: var(--border-radius-md);
-      margin: var(--spacing-sm) 0;
+      margin: var(--spacing-xxs) 0;
       background: var(--surface-color);
       box-shadow: var(--shadow-md);
       transition: all var(--transition-normal);
+      font-size: 1.1rem;
     }
 
     .todo-item.completed {
@@ -185,14 +186,14 @@
 
 
     .todo-date {
-      margin-right: 15px;
+      margin-right: 16px;
     }
 
     .todo-actions {
-      margin-top: 10px;
+      margin-top: 8px;
       display: flex;
       gap: 10px;
-      padding-top: 10px;
+      padding-top: 8px;
       border-top: 1px solid var(--border-color);
       justify-content: flex-end;
     }
@@ -440,7 +441,7 @@
     .top-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: var(--spacing-lg);
+      gap: var(--spacing-md);
       width: 100%;
       margin-bottom: var(--spacing-lg);
     }
@@ -560,7 +561,7 @@
       width: 100%;
     }
 
-    @media (max-width: 1180px) {
+    @media (max-width: 1150px) {
       .top-row {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -1369,7 +1370,17 @@
         return;
       }
 
-      container.innerHTML = filteredTodos.map(todo => `
+      // 对待办事项进行排序，未完成的在前，已完成的在后
+      const sortedTodos = [...filteredTodos].sort((a, b) => {
+        if (a.completed === b.completed) {
+          // 如果完成状态相同，则按创建时间降序排列（新的在前）
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+        // 未完成的排在前面
+        return a.completed ? 1 : -1;
+      });
+
+      container.innerHTML = sortedTodos.map(todo => `
         <div class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
           <div class="todo-header">
             <span class="todo-user">${escapeHtml(todo.userName)}</span>
@@ -1441,8 +1452,6 @@
             </div>
           </div>
           <div class="plan-actions">
-            <button onclick="updateProgress('${plan.id}', 10)" class="btn-progress">+10%</button>
-            <button onclick="updateProgress('${plan.id}', -10)" class="btn-progress">-10%</button>
             <button onclick="deleteStudyPlan('${plan.id}')" class="btn-delete">删除</button>
           </div>
         </div>
@@ -1508,7 +1517,10 @@
         return;
       }
 
-      sendMessage('DELETE_STUDY_PLAN', { id: planId });
+      sendMessage('DELETE_STUDY_PLAN', {
+        id: planId,
+        userId: currentUserId
+      });
       showNotification('已删除学习计划');
     }
 
@@ -1857,15 +1869,25 @@
         return;
       }
 
-      container.innerHTML = todos.map(todo => `
+      // 对待办事项进行排序，未完成的在前，已完成的在后
+      const sortedTodos = [...todos].sort((a, b) => {
+        if (a.completed === b.completed) {
+          // 如果完成状态相同，则按创建时间降序排列（新的在前）
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+        // 未完成的排在前面
+        return a.completed ? 1 : -1;
+      });
+
+      container.innerHTML = sortedTodos.map(todo => `
         <div class="todo-item ${todo.completed ? 'completed' : ''}" data-id="${todo.id}">
           <span>${escapeHtml(todo.text)}</span>
           <div class="todo-meta">
-            <span class="todo-date">创建于: ${new Date(todo.createdAt).toLocaleString()}</span>
+            <span class="todo-date">${new Date(todo.createdAt).toLocaleString()}</span>
             ${todo.completedAt ? `<span class="todo-date">完成于: ${new Date(todo.completedAt).toLocaleString()}</span>` : ''}
             <div class="todo-actions">
               <button onclick="toggleComplete('${todo.id}')" class="btn-toggle">
-                ${todo.completed ? '撤销完成' : '标记完成'}
+                ${todo.completed ? '撤销' : '完成'}
               </button>
               <button onclick="deleteTodo('${todo.id}')" class="btn-delete">删除</button>
             </div>
@@ -1933,8 +1955,10 @@
         return;
       }
 
-      const updatedTodos = todos.filter(todo => todo.id !== id);
-      sendMessage('DELETE_TODO', updatedTodos);
+      sendMessage('DELETE_TODO', {
+        id: id,
+        userId: currentUserId
+      });
       showNotification('已删除待办事项');
     }
 
@@ -2143,18 +2167,15 @@
 
     // 退出登录
     function logout() {
-      // 清除本地存储的用户信息
-      localStorage.removeItem('userId');
-      localStorage.removeItem('userName');
-      localStorage.removeItem('userAvatar');
+      // 清除cookie
+      document.cookie = '';
 
       // 关闭WebSocket连接
       if (ws) {
         ws.close();
       }
-
-      // 跳转到登录页面
-      window.location.href = '/web/login';
+      
+      window.location.href = '/web/logout';
     }
   </script>
   <!-- 图片裁剪模态框 -->
